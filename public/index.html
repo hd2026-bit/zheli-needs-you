@@ -43,6 +43,9 @@ button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-vis
 button.ftile{text-align:left;color:var(--ink);font-weight:400;min-height:0;cursor:pointer}button.ftile.sel{outline:3px solid var(--accent);outline-offset:2px}
 #heroNums .bignum .v{font-size:clamp(1.3rem,1.9vw,1.8rem);white-space:nowrap}#heroNums .bignum .v small{white-space:normal}
 .shell>main,.shell>.top{width:100%}
+.popsec{gap:16px}.popg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}@media (max-width:900px){.popg{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.popg .bignum{background:var(--panel);border:1px solid var(--line)}.popg .bignum .v{font-size:clamp(1.4rem,2.2vw,1.9rem)}.popg .bignum .v small{font-size:.95rem}
+.pend{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;font-size:.94rem;color:var(--muted)}.pend .tag{border:1px dashed var(--muted);border-radius:999px;padding:.15rem .8rem;color:var(--ink);font-weight:700}
 svg.pyr text{fill:var(--muted);font-family:var(--f-mono);font-size:13px}svg.pyr .m{fill:var(--accent)}svg.pyr .f{fill:var(--mark)}svg.pyr .m.hl,svg.pyr .f.hl{stroke:var(--ink);stroke-width:2}svg.pyr .dim{opacity:.35}
 .xq{display:flex;flex-direction:column;gap:14px}.xq .row{display:flex;flex-wrap:wrap;gap:10px;align-items:end}.xq label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.94rem}
 .xq .res{background:var(--soft);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}.xq .res .v{font-family:var(--f-mono);font-size:2rem;line-height:1.2}
@@ -271,30 +274,29 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         <div class="big3" id="heroNums"></div>
       </div>
 
-      <div class="panel">
-        <div class="sec-h"><h2>人口樣貌</h2><span class="sm muted">背景資訊，不列入風險計分</span></div>
-        <div class="big3" id="cPop"></div>
-      </div>
-
-      <div class="two">
-        <div class="panel">
-          <div class="sec-h"><h2>年齡與性別</h2><span class="sm muted">115 年 9 月</span></div>
-          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>男</span><span><span class="sw" style="background:var(--mark)"></span>女</span><span class="sm muted">框起來的是交叉查詢選到的年齡層</span></div>
-          <svg class="chart pyr" id="cPyr" viewBox="0 0 640 330" role="img" aria-label="各年齡層男女人數"></svg>
+      <div class="sec popsec">
+        <div class="sec-h"><h2>人口樣貌</h2><p>背景資訊，不列入風險計分・115 年 9 月</p></div>
+        <div class="popg" id="cPop"></div>
+        <div class="pend" id="cPend"></div>
+        <div class="two">
+          <div class="panel">
+            <div class="sec-h"><h3>年齡與性別</h3></div>
+            <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>男</span><span><span class="sw" style="background:var(--mark)"></span>女</span><span class="sm muted">框起來的是交叉查詢選到的年齡層</span></div>
+            <svg class="chart pyr" id="cPyr" viewBox="0 0 640 330" role="img" aria-label="各年齡層男女人數"></svg>
+          </div>
+          <div class="panel"><div class="sec-h"><h3>交叉查詢</h3><span class="sm muted">年齡層 × 性別 × 居住情況</span></div><div class="xq" id="cXq"></div></div>
         </div>
-        <div class="panel"><div class="sec-h"><h2>交叉查詢</h2></div><div class="xq" id="cXq"></div></div>
-      </div>
-
-      <div class="two">
-        <div class="panel">
-          <h2>長輩人數會怎麼變</h2>
-          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
-          <svg class="chart" id="cTrend" viewBox="0 0 640 260" role="img" aria-label="65 歲以上人數趨勢"></svg>
-        </div>
-        <div class="panel">
-          <div class="sec-h"><h2>各區長輩人數</h2></div>
-          <p class="sm muted">65 歲以上人數與占比。點一區只看那一區。</p>
-          <div class="drk" id="distRank"></div>
+        <div class="two">
+          <div class="panel">
+            <h3>長輩人數會怎麼變</h3>
+            <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
+            <svg class="chart" id="cTrend" viewBox="0 0 640 260" role="img" aria-label="65 歲以上人數趨勢"></svg>
+          </div>
+          <div class="panel">
+            <div class="sec-h"><h3>各區長輩人數</h3></div>
+            <p class="sm muted">65 歲以上人數與占比。點一區只看那一區。</p>
+            <div class="drk" id="distRank"></div>
+          </div>
         </div>
       </div>
 
@@ -340,24 +342,23 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         <div id="vSmall"></div>
       </div>
 
-      <div class="panel">
-        <div class="sec-h"><h2>人口樣貌</h2><span class="sm muted">背景資訊，不列入風險計分</span></div>
-        <div class="big3" id="vPop"></div>
-      </div>
-
-      <div class="two">
-        <div class="panel">
-          <div class="sec-h"><h2>年齡與性別</h2><span class="sm muted">115 年 9 月</span></div>
-          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>男</span><span><span class="sw" style="background:var(--mark)"></span>女</span></div>
-          <svg class="chart pyr" id="vPyr" viewBox="0 0 640 330" role="img" aria-label="本里各年齡層男女人數"></svg>
+      <div class="sec popsec">
+        <div class="sec-h"><h2>人口樣貌</h2><p>背景資訊，不列入風險計分・115 年 9 月</p></div>
+        <div class="popg" id="vPop"></div>
+        <div class="pend" id="vPend"></div>
+        <div class="two">
+          <div class="panel">
+            <div class="sec-h"><h3>年齡與性別</h3></div>
+            <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>男</span><span><span class="sw" style="background:var(--mark)"></span>女</span></div>
+            <svg class="chart pyr" id="vPyr" viewBox="0 0 640 330" role="img" aria-label="本里各年齡層男女人數"></svg>
+          </div>
+          <div class="panel"><div class="sec-h"><h3>交叉查詢</h3><span class="sm muted">年齡層 × 性別 × 居住情況</span></div><div class="xq" id="vXq"></div></div>
         </div>
-        <div class="panel"><div class="sec-h"><h2>交叉查詢</h2></div><div class="xq" id="vXq"></div></div>
-      </div>
-
-      <div class="panel">
-        <h2>長輩人數會怎麼變</h2>
-        <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
-        <svg class="chart" id="trend" viewBox="0 0 640 260" role="img" aria-label="高齡人口趨勢"></svg>
+        <div class="panel">
+          <h3>長輩人數會怎麼變</h3>
+          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
+          <svg class="chart" id="trend" viewBox="0 0 640 260" role="img" aria-label="高齡人口趨勢"></svg>
+        </div>
       </div>
 
       <div class="sec">
@@ -561,7 +562,8 @@ function renderCross(id,S,isVillage){
   if(isVillage){const C=DATA,cn=C.reduce((a,r)=>a+xCount(r),0),cp=pct(cn,sum(C,'pop'));html+=`，全市 ${cp.toFixed(1)}%${pct(n,pop)>cp*1.2?'　<b class="r">明顯高於全市</b>':''}`}
   html+=`</span></div>`;
   if(!isVillage){const top=S.filter(r=>r.pop>=1000).map(r=>({r,p:pct(xCount(r),r.pop)})).sort((a,b)=>b.p-a.p).slice(0,5);
-    html+=`<div><p class="lbl">占比最高的 5 個里</p>${top.map(o=>`<button class="vrow" data-k="${key(o.r)}"><span class="rk">${o.p.toFixed(1)}%</span><span><span class="nm">${o.r.v}<small>${o.r.d}</small></span><br><span class="rc">${fmt(xCount(o.r))} 人</span></span></button>`).join('')}<p class="sm muted">只比較人口 1,000 人以上的里。</p></div>`}
+    const mx=Math.max(...top.map(o=>o.p),1);
+    html+=`<div><p class="lbl">占比最高的 5 個里（點里名看那個里）</p><div class="drk">${top.map(o=>`<button class="drow" style="grid-template-columns:8.5em minmax(0,1fr) auto" data-k="${key(o.r)}"><span>${o.r.v}<small class="sm muted"> ${o.r.d}</small></span><span class="tr"><span style="width:${o.p/mx*100}%;background:var(--mark)"></span></span><span class="num">${o.p.toFixed(1)}%・${fmt(xCount(o.r))} 人</span></button>`).join('')}</div><p class="sm muted">只比較人口 1,000 人以上的里。</p></div>`}
   html+=`<p class="sm muted">居住情況（獨居、同住、一人戶、老老）需民政局提供里 × 年齡層 × 性別資料後才能交叉。</p>`;
   $(id).innerHTML=html;
 }
@@ -571,10 +573,9 @@ function popAgg(S){const p=sum(S,'pop'),e=sum(S,'e65'),w=sum(S,'a1564'),a=sum(S,
 function renderPopTiles(id,S,isV){
   const v=popAgg(S),c=isV?popAgg(DATA):null,cmp=(k,u,d)=>c&&isN(c[k])?`<span class="sm muted">全市 ${d(c[k])}${u}</span>`:'';
   const f1=x=>x.toFixed(1),f0=x=>fmt(x);
-  const T=[['扶老比','oldDep','%',f1,'每 100 位 15–64 歲對應的長輩數'],['80 歲以上占率','p80','%',f1,''],['人口密度','dens',' 人/km²',f0,''],['人口趨勢','chg',' 個百分點',x=>(x>=0?'+':'')+f1(x),'65 歲以上占率，115 年 9 月比 110 年 12 月']];
-  let h=T.map(([t,k,u,d,n])=>`<div class="bignum"><span class="k">${t}</span><span class="v">${isN(v[k])?d(v[k]):'—'}<small>${u}</small></span>${cmp(k,u,d)}${n?`<span class="sm muted">${n}</span>`:''}</div>`).join('');
-  h+=[['自然增加率','里級出生、死亡開放資料最新只到 108 年 8 月，待民政局或戶政事務所提供'],['社會增加率（遷入遷出）','開放資料沒有到里，待民政局提供'],['居住情況','獨居、與家人同住、一人戶、老老同住，待民政局提供']].map(([t,n])=>`<div class="bignum" style="background:transparent;border:1px dashed var(--line)"><span class="k">${t}</span><span class="v" style="font-size:1.2rem;color:var(--muted)">待提供</span><span class="sm muted">${n}</span></div>`).join('');
-  $(id).innerHTML=h;
+  const T=[['扶老比','oldDep','%',f1,'每 100 位 15–64 歲對應的長輩'],['80 歲以上占率','p80','%',f1,''],['人口密度','dens',' 人/km²',f0,''],['人口趨勢','chg',' 個百分點',x=>(x>=0?'+':'')+f1(x),'65 歲以上占率比 110 年底']];
+  $(id).innerHTML=T.map(([t,k,u,d,n])=>`<div class="bignum"><span class="k">${t}</span><span class="v">${isN(v[k])?d(v[k]):'—'}<small>${u}</small></span>${cmp(k,u,d)}${n?`<span class="sm muted">${n}</span>`:''}</div>`).join('');
+  $(id.replace('Pop','Pend')).innerHTML='<b>待提供</b>'+[['自然增加率','里級出生、死亡開放資料最新只到 108 年 8 月'],['社會增加率（遷入遷出）','開放資料沒有到里'],['居住情況（獨居、同住、一人戶、老老）','需民政局提供']].map(([t,n])=>`<span class="tag" title="${n}">${t}</span>`).join('')+'<span>由民政局、戶政事務所提供後即可加入</span>';
 }
 
 /* ================= 全市 ================= */
