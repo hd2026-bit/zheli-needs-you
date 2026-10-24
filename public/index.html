@@ -347,12 +347,13 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         </div>
       </div>
 
-      <details class="more"><summary>里長文書：經費申請、路口陳情、熱浪關懷</summary>
+      <details class="more"><summary>里長文書：經費申請、路口陳情、熱浪關懷、100 日行動計畫</summary>
         <div style="display:flex;flex-direction:column;gap:14px">
           <div class="tabs" role="tablist">
             <button role="tab" aria-selected="true" data-tool="fund">經費申請佐證</button>
             <button role="tab" aria-selected="false" data-tool="petition">路口改善陳情</button>
             <button role="tab" aria-selected="false" data-tool="heat">熱浪關懷訊息</button>
+            <button role="tab" aria-selected="false" data-tool="d100">100 日行動計畫</button>
           </div>
           <textarea id="toolText" aria-label="可複製文字"></textarea>
           <div class="row"><button id="copyBtn">複製文字</button><span class="toast" id="toast" role="status"></span></div>
@@ -729,6 +730,14 @@ function renderTool(k){
   if(k==='fund'){const reds=DOMS.filter(([d])=>x.S0.L[d]==='red').map(([,t])=>t);
     t=`【${x.d}${x.v}高齡服務需求說明】\n\n本里依國家發展委員會超高齡社會五大領域風險指標評估，於全市 ${DATA.length} 個里中列第 ${x.rank} 優先${reds.length?'，高風險面向為「'+reds.join('、')+'」':''}${x.S0.trend?'，且高齡化速度屬全市最快的四分之一':''}。\n\n一、現況：戶籍人口 ${fmt(x.pop)} 人，65 歲以上 ${fmt(x.e65)} 人（${pct(x.e65,x.pop).toFixed(1)}%），推估 5 年後達 ${fmt(proj[4])} 人。${[line('alone'),line('oldDep')].filter(Boolean).join('；')}。\n\n二、主要需求：\n${x.pk.slice(0,3).map((o,i)=>`${i+1}. ${o.k.t}：${o.k.tr.map(line).filter(Boolean).join('；')}`).join('\n')||'（無）'}\n\n三、申請項目與預期效益：（請填寫）\n\n資料來源：內政部戶政司、交通部、衛福部、社會局等機關資料，指標架構依國發會超高齡社會風險指標公式草案。`}
   else if(k==='petition'){const h=hot[0]||['（地點）','（型態）',0];t=`主旨：建請改善本里「${h[0]}」長輩通行安全。\n\n說明：\n一、依臺北市警察局及警政署交通事故資料，本里 2023–2025 年 65 歲以上長輩行人被撞事故 ${isN(x.acc)?mask(x.acc):'（待填）'} 件，其中「${h[0]}」${mask(+h[2])} 件，主要型態為${h[1]}。\n二、本里 65 歲以上人口 ${fmt(x.e65)} 人，佔 ${pct(x.e65,x.pop).toFixed(1)}%。\n三、建請評估：延長行人綠燈秒數、增設行人庇護島或標線型人行道、加強照明與警示。\n\n${x.d}${x.v}辦公處 敬上`}
+  else if(k==='d100'){
+    const T0=new Date(),ad=n=>{const d=new Date(T0);d.setDate(d.getDate()+n);return `${d.getMonth()+1}/${d.getDate()}`};
+    const ks=(x.pk.length?x.pk:[{k:PKG.find(p=>p.id==='care')}]).slice(0,3).map(o=>o.k);
+    const reds=DOMS.filter(([d])=>x.S0.L[d]==='red').map(([,t])=>t),h=hot[0];
+    const who=[...new Set(ks.flatMap(k=>k.who.split('、')))].filter(w=>w!=='里辦公處').join('、');
+    const act=(i)=>ks.map(k=>`・【${k.t}】${k.do[i]}`).join('\n');
+    const goal=k=>{const P=PLAN[k.id];return `・${k.t}：${k.lv.n} ${P.v}${unit(k.lv.u)}（依據：${k.tr.filter(id=>isN(x.S0.P[id])).sort((a,b)=>x.S0.P[b]-x.S0.P[a]).map(line).filter(Boolean)[0]||k.why}）`};
+    t=`【${x.d}${x.v} 高齡安心 100 日行動計畫】\n期間：第 1 日（${ad(0)}）至第 100 日（${ad(99)}）\n\n本里於全市 ${DATA.length} 個里中列第 ${x.rank} 優先${reds.length?'，高風險面向：'+reds.join('、'):''}。65 歲以上 ${fmt(x.e65)} 人（${pct(x.e65,x.pop).toFixed(1)}%）。\n本次聚焦：${ks.map(k=>k.t).join('、')}\n\n一、第 1–30 日（${ad(0)}–${ad(29)}）盤點與啟動\n・召開里內工作會議，確認鄰長、志工、據點分工\n・名冊比對：80 歲以上 ${isN(x.e80)?fmt(x.e80)+' 人':'（待提供）'}、獨居長輩${isN(x.alone)?' '+fmt(x.alone)+' 人':'（待提供）'}\n${act(0)}\n檢核點（第 30 日）：完成名單與分工表，聯繫 ${who}\n\n二、第 31–60 日（${ad(30)}–${ad(59)}）試辦\n${act(1)}${h?`\n・將「${h[0]}」列為優先改善地點，送出路口改善陳情（可用「路口改善陳情」頁籤）`:''}\n檢核點（第 60 日）：至少 1 項服務實際上線，記錄參與人次\n\n三、第 61–100 日（${ad(60)}–${ad(99)}）擴大與檢核\n${act(2)}\n・依試辦結果提出經費申請（可用「經費申請佐證」頁籤）\n・里民大會報告成果，決定下一期延續項目\n檢核點（第 100 日）：對照下列目標，未達成者列出原因\n\n四、100 日目標\n${ks.map(goal).join('\n')}\n\n五、協力單位\n${who}\n\n資料來源：臺北市開放資料、國發會超高齡社會五大領域風險指標公式草案；標「待提供」者需向機關申請。`}
   else t=`【${x.v}高溫關懷提醒】\n今天很熱，請家中長輩：\n・上午 10 點到下午 4 點盡量不要出門\n・每小時喝一杯水，不要等口渴\n・頭暈、想吐、心跳很快，馬上休息並打 119\n\n里內涼爽的地方：（請填活動中心地址、開放時間）\n家裡有獨居長輩需要人去看看，請回覆這則訊息或打給里辦公處。`;
   $('toolText').value=t;
 }
@@ -874,7 +883,9 @@ function renderSide(tab){
       <li>人行道樹蔭：行道樹＋公園樹木，棵數 × 樹冠寬 8 公尺 ÷ 人行道長度（推估）</li></ul>
      <p class="cite">指標架構依國發會「114 年度建置以資料科學為基礎之社會政策治理機制」委託計畫之五大領域風險評估指標公式草案。計算程式：GitHub 專案 analysis/build_taipei.py。</p></div>`;
   } else {
-    const V=[['1.4','10/23','補上 data.taipei 開放資料：社區照顧關懷據點（496 處對到里）、Taipei Free 熱點、公車站位；參與、數位面向開始有資料'],
+    const V=[['1.7','10/24','里長文書新增「100 日行動計畫」頁籤：依該里觸發的政策，自動產生第 1–30、31–60、61–100 日工作、檢核點與 100 日目標'],
+     ['1.6','10/24','可獨立部署；帳號密碼改為選用'],
+     ['1.4','10/23','補上 data.taipei 開放資料：社區照顧關懷據點（496 處對到里）、Taipei Free 熱點、公車站位；參與、數位面向開始有資料'],
      ['1.3','10/23','新增右側「資料／方法／版本」面板：每個指標標示已匯入、推估、有開放資料待下載、需向機關申請'],
      ['1.2','10/23','人口改用 115 年 9 月（趨勢 110–115 年）；長者行人事故改為 2023–2025 三年；危險路口分級'],
      ['1.1','10/23','改用臺北市 456 里開放資料；新增人行道缺樹蔭指標與「陰涼安全的步行路（走這條！）」政策'],
