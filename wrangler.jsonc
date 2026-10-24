@@ -1,0 +1,13 @@
+{
+  // Cloudflare Workers 設定：所有請求先經過 src/worker.js 驗證，再回傳 public/ 的檔案
+  "name": "zheli-needs-you",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  },
+  "workers_dev": true,
+  "keep_vars": true
+}
