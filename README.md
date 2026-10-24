@@ -16,7 +16,7 @@
 6. [100 日落地計畫](#100-日落地計畫)
 7. [與其他專案的關係](#與其他專案的關係)
 8. [資料](#資料臺北市開放資料)
-9. [部署](#部署cloudflare-workers)
+9. [部署](#部署)
 
 ---
 
@@ -209,8 +209,6 @@
 | Taipei Free 熱點 | 資訊局（data.taipei），座標落在哪個里 | 計算 |
 | 其他（獨居、低收、健檢、志工…） | 機關資料 | 待提供，頁面顯示「待提供」、不計分 |
 
-## 部署（Cloudflare Workers）
-- 網址：`https://zheli-needs-you.hondao2026.workers.dev`；頁尾「走這條！」自動連到同一子網域的 `silver-safe-walk`
-- Cloudflare：Workers & Pages → Create → Import a repository → 選本 repo → Deploy；之後推送到 `main` 會自動重新部署
-- 帳密（選用）：沒設定時公開瀏覽；要登入就在 Settings → Variables and Secrets 新增 Secret `DEMO_USER`、`DEMO_PASS`
-- 更新時記得把 `public/index.html` 同步複製到 silver-safe-walk 的 `public/zheli/index.html`
+## 部署
+- 部署於 Cloudflare Workers；推送到 `main` 後自動重新部署
+- 更新時把 `public/index.html` 同步複製到 silver-safe-walk 的 `public/zheli/index.html`
