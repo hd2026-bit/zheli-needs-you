@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-/* Layout: 銀髮友善決策儀表板。大字、寬行距、高對比；先結論→最該做的 3 件事→其他政策→哪一區→地圖。燈號一律附文字。 */
+/* Layout: 銀髮友善決策儀表板。大字、寬行距、高對比；人口在上→三大面向與指標→地圖與排序。燈號一律附文字。 */
 :root{
   --bg:#eef1f5; --panel:#ffffff; --ink:#111827; --muted:#3f4a5c; --line:#cfd6e0; --soft:#f3f5f8;
   --accent:#1d4f9c; --accent-soft:#e3ecf9; --mark:#9a5b00;
@@ -39,6 +39,11 @@ select,input[type=search]{font:inherit;padding:.55rem .8rem;border:2px solid var
 button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,rect.tile:focus-visible,summary:focus-visible{outline:3px solid var(--mark);outline-offset:3px}
 .shell{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
 @media (min-width:1240px){.shell{max-width:1720px;display:grid;grid-template-columns:minmax(0,1fr) 420px;align-items:start;gap:24px}.shell>.top{grid-column:1/-1}.side{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow-y:auto}.sidebtn{display:none!important}}
+@media (min-width:1240px){.shell{display:flex;max-width:1440px}}
+button.ftile{text-align:left;color:var(--ink);font-weight:400;min-height:0;cursor:pointer}button.ftile.sel{outline:3px solid var(--accent);outline-offset:2px}
+#heroNums .bignum .v{font-size:clamp(1.3rem,1.9vw,1.8rem);white-space:nowrap}#heroNums .bignum .v small{white-space:normal}
+.shell>main,.shell>.top{width:100%}
+button.lnk{background:none;border:0;padding:0;min-height:0;color:var(--accent);text-decoration:underline;font-weight:700;text-align:left}
 .side{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .stabs{display:flex;gap:4px;background:var(--soft);border-radius:12px;padding:4px}
 .stabs button{flex:1;border:0;background:transparent;color:var(--muted);min-height:44px;padding:0 6px;font-weight:500;border-radius:9px}
@@ -239,15 +244,14 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
   <header class="top">
     <div class="brand">
       <h1>這里需要你</h1>
-      <span class="sub">臺北市 456 里高齡風險・對齊國發會五大領域指標</span>
+      <span class="sub">臺北市 456 里高齡風險・健康、安全、參與</span>
       <span class="flag" id="dataFlag">臺北市開放資料・人口 115 年 9 月</span>
     </div>
     <nav class="nav" aria-label="切換頁面">
-      <button data-view="city" aria-current="true">全市該做什麼</button>
+      <button data-view="city" aria-current="true">全市總覽</button>
       <button data-view="village" aria-current="false">我的里</button>
       <button data-view="ind" aria-current="false">指標與公式</button>
       <button data-view="data" aria-current="false">匯入資料</button>
-      <button class="ghost sidebtn" id="sideBtn" type="button">資料說明 ↓</button>
     </nav>
     <div class="tools">
       <label for="distFilter">看哪裡<select id="distFilter"></select></label>
@@ -264,22 +268,24 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         <div class="big3" id="heroNums"></div>
       </div>
 
-      <div class="sec">
-        <div class="sec-h"><h2>最該先做的 3 件事</h2><p>依受影響的長輩人數排序</p></div>
-        <div class="top3" id="top3"></div>
-      </div>
-
       <div class="two">
         <div class="panel">
-          <div class="sec-h"><h2>其他政策</h2><p>點一項看做法</p></div>
-          <div class="plist2" id="others"></div>
+          <h2>長輩人數會怎麼變</h2>
+          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
+          <svg class="chart" id="cTrend" viewBox="0 0 640 260" role="img" aria-label="65 歲以上人數趨勢"></svg>
         </div>
         <div class="panel">
-          <div class="sec-h"><h2>資源先給哪一區</h2></div>
-          <p class="sm muted">住在高風險里的長輩人數。點一區只看那一區。</p>
+          <div class="sec-h"><h2>各區長輩人數</h2></div>
+          <p class="sm muted">65 歲以上人數與占比。點一區只看那一區。</p>
           <div class="drk" id="distRank"></div>
         </div>
       </div>
+
+      <div class="sec">
+        <div class="sec-h"><h2>三大面向</h2><p>點一個面向，往下看它的指標</p></div>
+        <div class="five" id="cityDoms"></div>
+      </div>
+      <div class="panel" id="cityInd"></div>
 
       <div class="two">
         <div class="panel">
@@ -295,20 +301,12 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         </div>
       </div>
 
-      <details class="more" open id="plan100"><summary>100 日建置計畫：把「這里需要你」和「走這條！」做成真的</summary>
-        <div style="display:flex;flex-direction:column;gap:16px">
-          <p class="note">現在是原型：「這里需要你」36 項指標中，有些已用開放資料算出，其他標示「待提供」；「走這條！」的天氣、路線仍是模擬，只有大安區示範區。這 100 日要補齊資料、在試辦里實際用過，再交給維運單位。</p>
-          <div class="tbl"><table class="t"><thead><tr><th>階段</th><th>這里需要你</th><th>走這條！</th><th>完成標準</th></tr></thead><tbody><tr><td><b>第 1–30 日</b><br><span class="sm muted">資料到位、找到夥伴</span></td><td><ul style="margin:0;padding-left:1.2em"><li>下載 5 項已有開放資料的指標（土壤液化潛勢、醫事機構座標、各里出生死亡、遷入遷出、屋齡）</li><li>向機關申請 12 項里級加總資料（只要加總、少於 3 人遮蔽，不要名冊）</li><li>選 2–3 個試辦里，和區公所、里長確認他們要什麼</li></ul></td><td><ul style="margin:0;padding-left:1.2em"><li>天氣燈號接氣象署即時資料；路燈換新版點位（目前為 2017 年）；路線從示範路線改為實際路網計算</li><li>確定試辦區與步行範圍</li><li>招募試辦的關懷據點與志工</li></ul></td><td>資料申請全部送出；試辦里、試辦區確定</td></tr><tr><td><b>第 31–60 日</b><br><span class="sm muted">試辦、收回饋</span></td><td><ul style="margin:0;padding-left:1.2em"><li>匯入機關資料，重算 456 里風險排序</li><li>試辦里實際使用「里長文書」與「100 日行動計畫」</li><li>記錄里長的修改意見（哪些文字直接能用、哪些要改）</li></ul></td><td><ul style="margin:0;padding-left:1.2em"><li>長輩實地走測（目標 20 位），家屬、志工陪同</li><li>測試大字體、語音提醒、不用手機的紙本地圖</li><li>招募友善店家當納涼點</li></ul></td><td>至少 2 個里實際使用；20 位長輩走測紀錄</td></tr><tr><td><b>第 61–100 日</b><br><span class="sm muted">修正、上線、交接</span></td><td><ul style="margin:0;padding-left:1.2em"><li>指標與計分方式對齊國發會草案定稿</li><li>資料改為每月自動更新</li><li>整理試辦成果，提出擴大到其他里的經費需求</li></ul></td><td><ul style="margin:0;padding-left:1.2em"><li>依走測回饋修正路線（哪條路真的陰涼、哪個路口真的危險）</li><li>上線前做弱點掃描與個資保護評估</li><li>與維運單位交接：主機、資料更新、問題回報窗口</li></ul></td><td>正式網址上線；維運單位與更新流程確定</td></tr></tbody></table></div>
-          <h3 style="margin:8px 0 0">需要哪些利害關係人</h3>
-          <div class="tbl"><table class="t"><thead><tr><th>誰</th><th>需要他們做什麼</th><th>專案</th><th>第幾日</th></tr></thead><tbody><tr><td>國發會（超高齡社會風險指標計畫團隊）</td><td>指標與公式定稿、確認計分方式</td><td style="white-space:nowrap">這里需要你</td><td class="num" style="white-space:nowrap">1–30、61–100</td></tr><tr><td>社會局（長青福利科、救助科、志願服務）</td><td>低收中低收、身障、志工、終身學習的里級加總；關懷據點名冊</td><td style="white-space:nowrap">這里需要你</td><td class="num" style="white-space:nowrap">1–30</td></tr><tr><td>民政局、區公所、里長</td><td>戶籍獨居／雙老、出生死亡、遷入遷出；試辦里與使用回饋</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">1–60</td></tr><tr><td>衛生局、衛生所、長照管理中心</td><td>健檢、癌篩、流感疫苗、失能長者的里級加總</td><td style="white-space:nowrap">這里需要你</td><td class="num" style="white-space:nowrap">1–30</td></tr><tr><td>警察局交通警察大隊、交通局</td><td>長者事故資料更新；事故路口改善的回應</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">1–60</td></tr><tr><td>工務局（公園路燈工程管理處、新建工程處、大地工程處）</td><td>行道樹、人行道、路燈點位、道路施工；土壤液化潛勢圖</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">1–30</td></tr><tr><td>資訊局（data.taipei）</td><td>資料集更新與 API；上線的資安規範</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">全程</td></tr><tr><td>中央氣象署、環境部</td><td>高溫、空品即時資料（開放 API）</td><td style="white-space:nowrap">走這條！</td><td class="num" style="white-space:nowrap">1–30</td></tr><tr><td>社區發展協會、關懷據點、志工</td><td>帶長輩走測、發紙本安心地圖</td><td style="white-space:nowrap">走這條！</td><td class="num" style="white-space:nowrap">31–60</td></tr><tr><td>長輩與家屬</td><td>實際使用與回饋：字夠不夠大、路是不是真的陰涼</td><td style="white-space:nowrap">走這條！</td><td class="num" style="white-space:nowrap">31–60</td></tr><tr><td>友善店家</td><td>當納涼點：休息、喝水、借廁所</td><td style="white-space:nowrap">走這條！</td><td class="num" style="white-space:nowrap">31–100</td></tr><tr><td>鄰近大學</td><td>手機小老師、協助走測與成效評估</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">31–100</td></tr><tr><td>維運單位（待決定）</td><td>接手主機、資料更新、資安維護</td><td style="white-space:nowrap">兩者</td><td class="num" style="white-space:nowrap">61–100</td></tr></tbody></table></div>
-        </div>
-      </details>
-      <details class="more"><summary>各區五個面向的高風險里數</summary><div class="matrix" id="matrix"></div></details>
+      <details class="more"><summary>各區三大面向的高風險里數</summary><div class="matrix" id="matrix"></div></details>
       <details class="more"><summary>進階：風險怎麼判定</summary>
         <div style="display:flex;flex-direction:column;gap:12px;max-width:40em">
           <label for="modeSel" class="lbl">判定方式</label>
           <select id="modeSel"><option value="pts">點數法（最弱 10% 記 1 點）</option><option value="q">四分位法（最差 1/4）</option></select>
-          <p class="sm muted">點數法依國發會計畫建議；四分位法依全球高齡觀察指數（GAWI）準則。</p>
+          <p class="sm muted">點數法：落在全市最弱 10% 記 1 點；四分位法依全球高齡觀察指數（GAWI）準則。</p>
         </div>
       </details>
     </section>
@@ -325,61 +323,27 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
         <div id="vSmall"></div>
       </div>
 
-      <div class="sec">
-        <div class="sec-h"><h2>這里需要你做的事</h2><p>依本里最弱的地方排出</p></div>
-        <div class="need" id="needs"></div>
-      </div>
-
       <div class="panel">
-        <div class="sec-h"><h2>行動清單</h2><span id="taskProg"></span></div>
-        <div class="ptrack"><span id="taskBar" style="width:0"></span></div>
-        <div class="tasks" id="tasks"></div>
-        <p class="sm muted">勾選紀錄只存在這台裝置。</p>
+        <h2>長輩人數會怎麼變</h2>
+        <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
+        <svg class="chart" id="trend" viewBox="0 0 640 260" role="img" aria-label="高齡人口趨勢"></svg>
       </div>
 
       <div class="sec">
-        <div class="sec-h"><h2>五個面向</h2><p>黑色刻度越往右，代表在全市越落後</p></div>
+        <div class="sec-h"><h2>三大面向</h2><p>黑色刻度越往右，代表在全市越落後；點一個面向看指標</p></div>
         <div class="five" id="five"></div>
       </div>
-
-      <div class="two">
-        <div class="panel">
-          <h2>長輩人數會怎麼變</h2>
-          <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>65 歲以上（110–115 年實際）</span><span>虛線是推估</span></div>
-          <svg class="chart" id="trend" viewBox="0 0 640 260" role="img" aria-label="高齡人口趨勢"></svg>
-        </div>
-        <div class="panel">
-          <h2>先去哪幾鄰</h2>
-          <p class="sm muted">80 歲以上人數，橘色是最多的三鄰。</p>
-          <svg class="chart" id="nbChart" viewBox="0 0 320 210" role="img" aria-label="各鄰 80 歲以上人數"></svg>
-        </div>
-      </div>
-
-      <details class="more"><summary>里長文書：經費申請、路口陳情、熱浪關懷、100 日行動計畫</summary>
-        <div style="display:flex;flex-direction:column;gap:14px">
-          <div class="tabs" role="tablist">
-            <button role="tab" aria-selected="true" data-tool="fund">經費申請佐證</button>
-            <button role="tab" aria-selected="false" data-tool="petition">路口改善陳情</button>
-            <button role="tab" aria-selected="false" data-tool="heat">熱浪關懷訊息</button>
-            <button role="tab" aria-selected="false" data-tool="d100">100 日行動計畫</button>
-          </div>
-          <textarea id="toolText" aria-label="可複製文字"></textarea>
-          <div class="row"><button id="copyBtn">複製文字</button><span class="toast" id="toast" role="status"></span></div>
-        </div>
-      </details>
-      <details class="more"><summary>長輩事故集中地點</summary>
-        <div class="tbl"><table class="t"><thead><tr><th>地點</th><th>主要型態</th><th style="text-align:right">件數（2023–2025）</th></tr></thead><tbody id="hotRows"></tbody></table></div>
-      </details>
-      <details class="more"><summary>完整指標（36 項）</summary><div class="dgrid" id="domPanels"></div></details>
+      <div id="domPanels"></div>
+      <details class="more"><summary>人口指標（9 項，作為背景，不計分）</summary><div id="popPanel"></div></details>
     </section>
 
     <!-- ===== 指標與公式 ===== -->
     <section id="indView" class="sec" hidden>
       <div class="panel">
         <h2>指標與公式</h2>
-        <p class="cite">指標架構與公式依據國家發展委員會「114 年度建置以資料科學為基礎之社會政策治理機制」委託計畫（亞洲大學吳肖琪講座教授、人工智慧科技基金會溫怡玲執行長）之〈台灣超高齡社會五大領域風險評估指標之資料來源與公式草案〉及表 3-1-3 指標可用性（115 年 1 月 23 日第 2 場專家焦點座談資料）。草案仍待討論。</p>
+        <p class="cite">指標以臺北市與中央政府開放資料計算；計算程式見 GitHub 專案 analysis/build_taipei.py。</p>
         <div class="legend"><span><span class="lv A">A</span> 開放資料可算到里</span><span><span class="lv B">B</span> 機關資料，只取里級加總</span><span><span class="lv C">C</span> 區級數值套用到各里</span></div>
-        <p class="note">每項指標依全市各里的分布換算風險位階（0 最好、100 最差）。點數法：落在最弱 10% 記 1 點；一個面向有 2 點以上（指標超過 4 項的面向要 3 點）為高風險。四分位法：面向平均位階在最差 1/4 為高風險。政策的對象里：相關指標有一項在全市最弱 8%，或兩項在最弱 20%。</p>
+        <p class="note">每項指標依全市各里的分布換算風險位階（0 最好、100 最差）。點數法：落在最弱 10% 記 1 點；一個面向有 2 點以上（指標超過 4 項的面向要 3 點）為高風險。四分位法：面向平均位階在最差 1/4 為高風險。人口指標只作背景，不計分。</p>
         <div class="tbl" id="indTable"></div>
       </div>
     </section>
@@ -400,32 +364,24 @@ footer{font-size:.88rem;color:var(--muted);text-align:center;padding-top:8px}
 
     <footer>這里需要你｜解方之一：<a id="toZou" href="/">走這條！求最大陰影面積</a>｜臺北市 456 里：人口、長者行人事故、人行道樹蔭、大眾運輸、關懷據點、Wi-Fi 熱點由開放資料計算；其他欄位待機關提供</footer>
   </main>
-  <aside class="side" id="side" aria-label="說明面板">
-    <div class="stabs" role="tablist">
-      <button role="tab" data-stab="src" aria-selected="true">資料</button>
-      <button role="tab" data-stab="how" aria-selected="false">方法</button>
-      <button role="tab" data-stab="ver" aria-selected="false">版本</button>
-    </div>
-    <div id="sideBody"></div>
-  </aside>
 </div>
 
 <script>
 (function(){
 /* ================= 指標定義 ================= */
-const DOMS=[['pop','人口'],['safe','安全'],['health','健康'],['part','參與'],['digi','數位']];
-const DNAME=Object.fromEntries(DOMS);
+const DOMS=[['health','健康'],['safe','安全'],['part','參與']];
+const DNAME={...Object.fromEntries(DOMS),pop:'人口'};
 // hw: 數值越高越危險；info: 只呈現不計分
 const IND=[
- {id:'p65',d:'pop',sub:'人口現況',n:'65 歲以上占率',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'65 歲以上 ÷ 總人口',c:r=>q(r.e65,r.pop)*100},
- {id:'p80',d:'pop',sub:'人口現況',n:'80 歲以上占率',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'80 歲以上 ÷ 總人口（本頁補充）',c:r=>q(r.e80,r.pop)*100},
- {id:'oldDep',d:'pop',sub:'人口現況',n:'扶老比',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'65 歲以上 ÷ 15–64 歲',c:r=>q(r.e65,r.a1564)*100},
- {id:'dep',d:'pop',sub:'人口現況',n:'扶養比',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'(<15 歲 + 65 歲以上) ÷ 15–64 歲',c:r=>nn(r.a014,r.e65,r.a1564)?(r.a014+r.e65)/r.a1564*100:null},
- {id:'alone',d:'pop',sub:'人口現況',n:'長者獨居率',u:'%',hw:1,l:'B',src:'內政部戶政司（戶內僅一老或雙老）',f:'戶內僅一老或雙老人數 ÷ 65 歲以上',c:r=>q(r.alone,r.e65)*100},
- {id:'nat',d:'pop',sub:'人口現況',n:'自然增加率',u:'‰',hw:0,l:'A',src:'內政部戶政司',f:'(出生 − 死亡) ÷ 總人口 × 1000',c:r=>nn(r.birth,r.death,r.pop)?(r.birth-r.death)/r.pop*1000:null},
- {id:'soc',d:'pop',sub:'人口現況',n:'社會增加率',u:'‰',hw:0,l:'A',src:'內政部戶政司',f:'(遷入 − 遷出) ÷ 總人口 × 1000',c:r=>nn(r.inM,r.outM,r.pop)?(r.inM-r.outM)/r.pop*1000:null},
- {id:'chg',d:'pop',sub:'人口趨勢',n:'65+ 占率較 110 年增加',u:'百分點',hw:1,l:'A',src:'臺北市民政局各里年齡人口',f:'115 年 9 月 65+ 占率 − 110 年 12 月 65+ 占率',c:r=>nn(r.e65_20,r.pop20)?(r.e65/r.pop-r.e65_20/r.pop20)*100:null},
- {id:'dens',d:'pop',sub:'人口現況',n:'人口密度',u:'人/km²',hw:1,l:'A',src:'戶政司＋村里界圖',f:'總人口 ÷ 土地面積',c:r=>q(r.pop,r.area),info:1},
+ {id:'p65',d:'pop',info:1,sub:'人口現況',n:'65 歲以上占率',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'65 歲以上 ÷ 總人口',c:r=>q(r.e65,r.pop)*100},
+ {id:'p80',d:'pop',info:1,sub:'人口現況',n:'80 歲以上占率',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'80 歲以上 ÷ 總人口（本頁補充）',c:r=>q(r.e80,r.pop)*100},
+ {id:'oldDep',d:'pop',info:1,sub:'人口現況',n:'扶老比',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'65 歲以上 ÷ 15–64 歲',c:r=>q(r.e65,r.a1564)*100},
+ {id:'dep',d:'pop',info:1,sub:'人口現況',n:'扶養比',u:'%',hw:1,l:'A',src:'內政部戶政司',f:'(<15 歲 + 65 歲以上) ÷ 15–64 歲',c:r=>nn(r.a014,r.e65,r.a1564)?(r.a014+r.e65)/r.a1564*100:null},
+ {id:'alone',d:'pop',info:1,sub:'人口現況',n:'長者獨居率',u:'%',hw:1,l:'B',src:'內政部戶政司（戶內僅一老或雙老）',f:'戶內僅一老或雙老人數 ÷ 65 歲以上',c:r=>q(r.alone,r.e65)*100},
+ {id:'nat',d:'pop',info:1,sub:'人口現況',n:'自然增加率',u:'‰',hw:0,l:'A',src:'內政部戶政司',f:'(出生 − 死亡) ÷ 總人口 × 1000',c:r=>nn(r.birth,r.death,r.pop)?(r.birth-r.death)/r.pop*1000:null},
+ {id:'soc',d:'pop',info:1,sub:'人口現況',n:'社會增加率',u:'‰',hw:0,l:'A',src:'內政部戶政司',f:'(遷入 − 遷出) ÷ 總人口 × 1000',c:r=>nn(r.inM,r.outM,r.pop)?(r.inM-r.outM)/r.pop*1000:null},
+ {id:'chg',d:'pop',info:1,sub:'人口趨勢',n:'65+ 占率較 110 年增加',u:'百分點',hw:1,l:'A',src:'臺北市民政局各里年齡人口',f:'115 年 9 月 65+ 占率 − 110 年 12 月 65+ 占率',c:r=>nn(r.e65_20,r.pop20)?(r.e65/r.pop-r.e65_20/r.pop20)*100:null},
+ {id:'dens',d:'pop',info:1,sub:'人口現況',n:'人口密度',u:'人/km²',hw:1,l:'A',src:'戶政司＋村里界圖',f:'總人口 ÷ 土地面積',c:r=>q(r.pop,r.area),info:1},
  {id:'lowinc',d:'safe',sub:'經濟安全',n:'低收及中低收占率',u:'%',hw:1,l:'B',src:'衛福部／社會局',f:'低收＋中低收人數 ÷ 總人口',c:r=>q(r.lowinc,r.pop)*100},
  {id:'crime',d:'safe',sub:'社會安全',n:'犯罪率',u:'每十萬人',hw:1,l:'A',src:'內政部警政署',f:'犯罪人次 ÷ 總人口 × 100,000',c:r=>q(r.crime,r.pop)*1e5},
  {id:'fraud',d:'safe',sub:'社會安全',n:'被詐騙立案率',u:'每十萬人',hw:1,l:'A',src:'內政部警政署',f:'立案受詐騙人次 ÷ 總人口 × 100,000',c:r=>q(r.fraud,r.pop)*1e5},
@@ -450,9 +406,9 @@ const IND=[
  {id:'vol',d:'part',sub:'擔任志工',n:'長者志工占率',u:'%',hw:0,l:'B',src:'衛福部／社會局志願服務',f:'65+ 志工人數 ÷ 65 歲以上',c:r=>q(r.vol,r.e65)*100},
  {id:'learn',d:'part',sub:'終身學習',n:'終身學習占率',u:'%',hw:0,l:'B',src:'衛福部、社會局、教育局、原民會',f:'參加關懷據點、樂齡、長青學苑、文健站等人數（身分證歸戶）÷ 65 歲以上設籍數',c:r=>q(r.learn,r.e65)*100},
  {id:'cover',d:'part',sub:'終身學習',n:'每千位長者關懷據點數',u:'處',hw:0,l:'A',src:'社會局社區照顧關懷據點（data.taipei）',f:'里內社區照顧關懷據點數 ÷ 65 歲以上 × 1000（依地址里名；名額資料待補）',c:r=>q(r.careN,r.e65)*1000},
- {id:'pass',d:'digi',sub:'智慧治理',n:'長者健康存摺使用率',u:'%',hw:0,l:'B',src:'衛福部健保署',f:'65+ 健康存摺有被管理人數 ÷ 65 歲以上設籍數',c:r=>q(r.pass,r.e65)*100},
- {id:'edu',d:'digi',sub:'促進能力環境',n:'65–74 歲國中以上占率',u:'%',hw:0,l:'B',src:'教育部',f:'65–74 歲國中以上教育程度 ÷ 65–74 歲設籍數',c:r=>q(r.edu7,r.e6574)*100},
- {id:'digpt',d:'digi',sub:'智慧學習',n:'Taipei Free 熱點',u:'處',hw:0,l:'A',src:'臺北市公眾區免費無線上網熱點（data.taipei）',f:'里內 Taipei Free 公共 Wi-Fi 熱點數（數位學習據點待補）',c:r=>isN(r.wifi)?r.wifi+(isN(r.dig)?r.dig:0):NaN}
+ {id:'pass',d:'part',sub:'數位・智慧治理',n:'長者健康存摺使用率',u:'%',hw:0,l:'B',src:'衛福部健保署',f:'65+ 健康存摺有被管理人數 ÷ 65 歲以上設籍數',c:r=>q(r.pass,r.e65)*100},
+ {id:'edu',d:'part',sub:'數位・促進能力環境',n:'65–74 歲國中以上占率',u:'%',hw:0,l:'B',src:'教育部',f:'65–74 歲國中以上教育程度 ÷ 65–74 歲設籍數',c:r=>q(r.edu7,r.e6574)*100},
+ {id:'digpt',d:'part',sub:'數位・智慧學習',n:'Taipei Free 熱點',u:'處',hw:0,l:'A',src:'臺北市公眾區免費無線上網熱點（data.taipei）',f:'里內 Taipei Free 公共 Wi-Fi 熱點數（數位學習據點待補）',c:r=>isN(r.wifi)?r.wifi+(isN(r.dig)?r.dig:0):NaN}
 ];
 const EXCLUDED=[
  ['安全','50–74 歲各年齡層勞參率','主計總處','只到縣市'],
@@ -463,8 +419,8 @@ const EXCLUDED=[
  ['健康','每萬人口病床數','衛福部','縣市、鄉鎮；可改為區級 C'],
  ['健康','65–74／75–84／85+ 自殺率','衛福部','人數少易辨識個人，不在里級呈現'],
  ['健康','衛生所人力與設施','衛福部','以衛生所為單位'],
- ['數位','長者量六力 LINE@ 使用率','衛福部國健署','只到縣市'],
- ['數位','非都會區遠距醫療衛生所數','衛福部','縣市、鄉鎮']
+ ['參與','長者量六力 LINE@ 使用率','衛福部國健署','只到縣市'],
+ ['參與','非都會區遠距醫療衛生所數','衛福部','縣市、鄉鎮']
 ];
 // CSV 欄位
 const COLS=[
@@ -511,7 +467,7 @@ const DEMO=[{"d":"松山區","v":"莊敬里","pop":4741,"a014":527,"a1564":3024,
 
 
 /* ================= 計分 ================= */
-let DATA=DEMO,isDemo=true,MODE='pts',BASE={},PT=[3,6],cur=null,currentTool='fund',view='city',mapMode='now',selPkg=null,openPkg=null;
+let DATA=DEMO,isDemo=true,MODE='pts',BASE={},PT=[3,6],cur=null,view='city',mapMode='all',cDom='safe',vDom=null;
 const SCORED=IND.filter(i=>!i.info);
 const NI=Object.fromEntries(DOMS.map(([d])=>[d,SCORED.filter(i=>i.d===d).length]));
 const INDM=Object.fromEntries(IND.map(i=>[i.id,i]));
@@ -523,14 +479,13 @@ function score(V){
   DOMS.forEach(([d])=>{const ps=SCORED.filter(i=>i.d===d).map(i=>P[i.id]).filter(isN);
     DM[d]=ps.length?ps.reduce((a,b)=>a+b,0)/ps.length:null;DP[d]=SCORED.filter(i=>i.d===d&&P[i.id]>=.9).length;
     const need=NI[d]>4?3:2;L[d]=DM[d]===null?'none':MODE==='pts'?(DP[d]>=need?'red':DP[d]>=1?'yel':'grn'):(DM[d]>=.75?'red':DM[d]>=.5?'yel':'grn')});
-  return{V,P,L,DM,DP,pts,reds:DOMS.filter(([d])=>L[d]==='red').length,trend:P.chg!==null&&P.chg>=.75};
+  return{V,P,L,DM,DP,pts,reds:DOMS.filter(([d])=>L[d]==='red').length,trend:(()=>{const p=riskPos(INDM.chg,V.chg);return p!==null&&p>=.75})()};
 }
 function baseline(){DATA.forEach(r=>r.V0=calcV(r));IND.forEach(i=>{BASE[i.id]=DATA.map(r=>r.V0[i.id]).filter(isN).map(v=>i.hw?v:-v).sort((a,b)=>a-b)});rescore()}
 function rescore(){
   DATA.forEach(r=>{r.S0=score(r.V0)});
   const p=DATA.map(r=>r.S0.pts).sort((a,b)=>a-b);PT=[p[Math.floor(p.length*.5)],p[Math.floor(p.length*.75)]];if(PT[1]<=PT[0])PT[1]=PT[0]+1;
   [...DATA].sort((a,b)=>b.S0.pts-a.S0.pts||b.S0.reds-a.S0.reds||b.e80-a.e80).forEach((x,i)=>x.rank=i+1);
-  DATA.forEach(r=>{r.pk=PKG.map(k=>({k,sev:sev(k,r)})).filter(o=>hit(o.k,r)).sort((a,b)=>b.sev-a.sev)});
 }
 const ptCls=pts=>pts>=PT[1]?'red':pts>=PT[0]?'yel':'grn';
 const LVT={red:'高風險',yel:'需留意',grn:'穩定',none:'資料不足'};
@@ -541,109 +496,56 @@ function plain(id,r){const i=INDM[id],v=r.V0[id],p=r.S0.P[id];if(!isN(v)||p===nu
   const share=Math.round(p*10);const cmp=share>=10?(i.hw?'全市最高的一群':'全市最低的一群'):(i.hw?`比全市 ${share} 成的里高`:`比全市 ${share} 成的里低`);
   return `${i.n} <b class="r">${fv(v,i.u)}${unit(i.u)}</b>，${cmp}`}
 
-/* ================= 政策 ================= */
-const PKG=[
- {id:'care',t:'獨居長輩關懷網',dom:'pop',tr:['alone','p80','oldDep'],who:'區公所、社會局長青福利科、社區發展協會',
-  why:'獨居和 80 歲以上長輩多',do:['鄰長逐戶確認獨居、雙老長輩','志工每週打電話、每月家訪','發緊急聯絡人小卡'],
-  lv:{n:'獨居長輩有人關心的比例',u:'%',min:0,max:100,step:10,def:60},
-  eff:(rs,v)=>({m:`${fmt(sum(rs,'alone')*v/100)} 位獨居長輩每週有人關心`,s:`${fmt(sum(rs,'e80'))} 位 80 歲以上長輩列入定期訪視`})},
- {id:'med',t:'醫療送到家門口',dom:'health',tr:['res','doc','bus','ltcuse'],who:'衛生局、衛生所、交通局、長照管理中心',
-  why:'走路到得了的醫療太少',do:['衛生所巡迴醫療每月進里','社區藥師服務、慢性病處方箋代領','復康巴士、就醫共乘'],
-  lv:{n:'每里加開巡迴醫療點',u:'處',min:0,max:3,step:1,def:1},apply:(y,v,r)=>{y.res=(r.res||0)+v;if(v)y.bus=(r.bus||0)+1}},
- {id:'prev',t:'健檢打疫苗到據點',dom:'health',tr:['chk','scr','flu'],who:'衛生局、衛生所、關懷據點',
-  why:'健檢、癌篩、流感疫苗比例低',do:['在據點辦健檢和癌症篩檢','疫苗季在活動中心設接種站','志工打電話提醒、協助接送'],
-  lv:{n:'健檢、篩檢、接種率提高',u:'個百分點',min:0,max:20,step:2,def:10},apply:(y,v,r)=>['chk','scr','flu'].forEach(k=>{if(isN(r[k]))y[k]=Math.min(r.e65,r[k]+r.e65*v/100)})},
- {id:'out',t:'讓長輩走出家門',dom:'part',tr:['learn','cover','vol'],who:'社會局長青福利科、樂齡學習中心、社區發展協會',
-  why:'據點名額少，出來活動的長輩少',do:['增設關懷據點或巷弄長照站','鄰長逐戶邀請沒來過的長輩','請健康長輩當志工'],
-  lv:{n:'每里新增關懷據點',u:'處',min:0,max:3,step:1,def:1},apply:(y,v,r)=>{y.careN=(r.careN||0)+v;if(isN(r.learn))y.learn=r.learn+v*24;if(isN(r.vol))y.vol=r.vol+v*3}},
- {id:'home',t:'老房子耐震、災時撤離',dom:'safe',tr:['oldH','hazard','quake','rain'],who:'都市發展局、消防局、區公所',
-  why:'老舊公寓多，或在災害潛勢區',do:['推廣耐震評估與危老重建補助','列出 80 歲以上、獨居長輩的撤離協助名單','每年一次社區防災演練'],
-  lv:{n:'撤離名單涵蓋 80 歲以上長輩',u:'%',min:0,max:100,step:10,def:80},
-  eff:(rs,v)=>({m:`${fmt(sum(rs,'e80')*v/100)} 位 80 歲以上長輩災時有人帶離`,s:`${fmt(sum(rs,'oldH'))} 戶老舊公寓可優先做耐震評估`})},
- {id:'road',t:'長輩過馬路更安全',dom:'safe',tr:['acc'],who:'交通局、區公所、警察局交通組',
-  why:'長輩交通事故多',do:['事故路口延長行人綠燈','畫標線型人行道、設行人庇護島','在事故路口辦交通安全宣導'],
-  lv:{n:'路口改善後事故減少',u:'%',min:0,max:60,step:5,def:30},apply:(y,v,r)=>{if(isN(r.acc))y.acc=r.acc*(1-v/100)}},
- {id:'shade',t:'陰涼安全的步行路（走這條！）',dom:'safe',tr:['shade','p65','acc'],who:'公園處、新工處、交通局、社會局、里辦公處',
-  why:'長輩多、人行道樹蔭少或長輩被撞多',do:['缺蔭路段優先補植行道樹','招募友善店家當納涼點、門口貼貼紙','發紙本安心地圖，推廣「走這條！」導航'],
-  lv:{n:'補植後人行道缺蔭比例下降',u:'個百分點',min:0,max:30,step:5,def:10},apply:(y,v,r)=>{if(isN(r.shade))y.shade=Math.max(0,r.shade-v)}},
- {id:'fraud',t:'防詐騙、顧荷包',dom:'safe',tr:['fraud','lowinc','crime'],who:'警察局、社會局救助科、銀行郵局',
-  why:'被詐騙或經濟弱勢的比例高',do:['在據點和里民大會講防詐','發 165 反詐騙專線小卡','盤點中低收入長輩的福利'],
-  lv:{n:'詐騙案件減少',u:'%',min:0,max:50,step:5,def:25},apply:(y,v,r)=>{if(isN(r.fraud))y.fraud=r.fraud*(1-v/100)}},
- {id:'digi',t:'教長輩用手機看健康',dom:'digi',tr:['pass','edu','digpt'],who:'衛生所、數位機會中心、鄰近大學',
-  why:'會用健康存摺的長輩少',do:['在據點開手機班、教健康存摺','請大學生當小老師','活動中心申請免費 Wi-Fi'],
-  lv:{n:'會用健康存摺的長輩增加',u:'個百分點',min:0,max:20,step:2,def:10},apply:(y,v,r)=>{if(isN(r.pass))y.pass=Math.min(r.e65,r.pass+r.e65*v/100);if(v)y.wifi=(r.wifi||0)+1}}
-];
-const PLAN=Object.fromEntries(PKG.map(k=>[k.id,{on:true,v:k.lv.def}]));
-function sev(k,r){const ps=k.tr.map(id=>r.S0.P[id]).filter(isN);return ps.length?Math.max(...ps):0}
-function hit(k,r){const ps=k.tr.filter(id=>INDM[id].l!=='C').map(id=>r.S0.P[id]).filter(isN);return ps.some(p=>p>=.92)||ps.filter(p=>p>=.8).length>=2}
-const targets=(k,S)=>S.filter(r=>r.pk.some(o=>o.k===k));
-function after(r,pkgs){const ks=pkgs.filter(k=>k.apply&&r.pk.some(o=>o.k===k));if(!ks.length)return r.S0;const y={...r};ks.forEach(k=>k.apply(y,PLAN[k.id].v,r));return score(calcV(y))}
-function changeOf(k,rs){const P=PLAN[k.id];
-  if(k.eff){const e=k.eff(rs,P.v);return{m:e.m,s:e.s,short:e.m}}
-  const A=rs.map(r=>after(r,[k])),d0=rs.filter(r=>r.S0.L[k.dom]==='red').length,d1=A.filter(a=>a.L[k.dom]==='red').length;
-  const pt0=rs.reduce((a,r)=>a+r.S0.pts,0),pt1=A.reduce((a,s)=>a+s.pts,0);
-  return{m:`${DNAME[k.dom]}高風險的里：${fmt(d0)} 個 → <b class="g">${fmt(d1)} 個</b>`,s:`風險點數合計少 ${fmt(pt0-pt1)} 點${k.id==='out'?`，新增 ${fmt(rs.length*P.v)} 處關懷據點`:k.id==='med'?`，新增 ${fmt(rs.length*P.v)} 處巡迴醫療`:''}`,short:`高風險里 ${fmt(d0)} → ${fmt(d1)}`};
-}
-
 /* ================= 全市 ================= */
 function scope(){const df=$('distFilter').value;return df?DATA.filter(x=>x.d===df):DATA}
-function topDists(rs){return Object.entries(groupBy(rs,r=>r.d)).sort((a,b)=>b[1].length-a[1].length).slice(0,3).map(([d])=>d).join('、')||'—'}
+const domsOf=(x,l)=>DOMS.filter(([d])=>x.S0.L[d]===l).map(([,t])=>t);
+function cityTrend(S){const a=S.filter(r=>trendOf(r));if(!a.length)return null;const n=a[0].t65.length,ok=a.filter(r=>r.t65.length===n);return Array.from({length:n},(_,i)=>ok.reduce((s,r)=>s+r.t65[i],0))}
 function renderCity(){
-  const S=scope(),df=$('distFilter').value,N=S.length,on=PKG.filter(k=>PLAN[k.id].on);
-  S.forEach(r=>r.S1=after(r,on));
-  const red0=S.filter(r=>r.S0.reds>0).length,red1=S.filter(r=>r.S1.reds>0).length,eRed=sum(S.filter(r=>r.S0.reds>0),'e65'),e65=sum(S,'e65');
-  const cards=PKG.map(k=>{const rs=targets(k,S);return{k,rs,e:sum(rs,'e65')}}).sort((a,b)=>b.e-a.e);
-  const where=df||'全市';
-  if(!red0&&!cards[0].e){$('heroSay').innerHTML=`${where} ${fmt(N)} 個里目前沒有高風險的面向。`;$('hero').style.borderLeftColor='var(--grn)'}
-  else{$('hero').style.borderLeftColor='';$('heroSay').innerHTML=`${where}有 <em>${fmt(red0)} 個里</em>需要優先幫忙，住著 <em>${fmt(eRed)} 位長輩</em>。<br>第一件該做的事是<i>「${cards[0].k.t}」</i>。`}
+  const S=scope(),df=$('distFilter').value,N=S.length,where=df||'全市';
+  const pop=sum(S,'pop'),e65=sum(S,'e65'),e80=sum(S,'e80'),sup=S.filter(r=>r.pop&&r.e65/r.pop>=.2).length,red=S.filter(r=>r.S0.reds>0).length;
+  const tr=cityTrend(S),proj=tr?linProj(tr,5):null;
+  $('hero').style.borderLeftColor='var(--accent)';
+  $('heroSay').innerHTML=`${where}有 <em>${fmt(e65)} 位</em> 65 歲以上長輩，占 ${pct(e65,pop).toFixed(1)}%。<br>${fmt(N)} 個里中，<em>${fmt(sup)} 個里</em>已是超高齡（長輩占 20% 以上）${red?`；<em>${fmt(red)} 個里</em>至少一個面向是高風險`:''}。`;
   $('heroNums').innerHTML=[
-    ['需要優先幫忙的里',`${fmt(red0)}<small> / ${fmt(N)} 里</small>`,''],
-    ['這些里的長輩',`${fmt(eRed)}<small> 人</small>`,''],
-    ['勾選的政策都做了以後',`${fmt(red0)}<span class="arw">→</span><b>${fmt(red1)}</b><small> 里</small>`,'good'],
-    ['變成穩定的里',`${fmt(S.filter(r=>r.S0.reds>0&&r.S1.reds===0).length)}<small> 里</small>`,'good']
-  ].map(([k,v,c])=>`<div class="bignum ${c}"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
-  $('top3').innerHTML=cards.slice(0,3).map((c,i)=>topCard(c,i)).join('');
-  $('others').innerHTML=cards.slice(3).map((c,i)=>otherRow(c,i+4)).join('');
-  renderDistRank(S);renderMap(S,df);renderList(S);renderMatrix(df);
+    ['總人口',`${fmt(pop)}<small> 人</small>`],
+    ['65 歲以上',`${fmt(e65)}<small> 人・${pct(e65,pop).toFixed(1)}%</small>`],
+    ['80 歲以上',`${fmt(e80)}<small> 人</small>`],
+    ['超高齡的里',`${fmt(sup)}<small> / ${fmt(N)} 里</small>`],
+    ['5 年後的長輩（推估）',proj?`${fmt(proj[4])}<small> 人</small>`:'—']
+  ].map(([k,v])=>`<div class="bignum"><span class="k">${k}</span><span class="v">${v}</span></div>`).join('');
+  drawTrend(tr,'cTrend');renderDistPop(df);renderCityDoms(S);renderMap(S,df);renderList(S);renderMatrix(df);
 }
-function leverHTML(k){const P=PLAN[k.id];return `<label class="lever" for="lv-${k.id}">${k.lv.n}：<span class="val">${P.v} ${k.lv.u}</span><input type="range" id="lv-${k.id}" data-lv="${k.id}" min="${k.lv.min}" max="${k.lv.max}" step="${k.lv.step}" value="${P.v}"></label>`}
-function footHTML(k){const P=PLAN[k.id];return `<div class="row"><label class="chk"><input type="checkbox" data-on="${k.id}" ${P.on?'checked':''}>納入全市計畫</label><button class="ghost" data-pk="${k.id}">${selPkg===k.id?'取消地圖標示':'在地圖上看'}</button></div>`}
-function topCard(c,i){const k=c.k,ch=changeOf(k,c.rs);
-  return `<div class="tcard" id="pc-${k.id}"><span class="no">${i+1}</span><h3>${k.t}</h3><p class="why">${k.why}。集中在${topDists(c.rs)}。</p>
-    <div class="nums"><div><span class="n">${fmt(c.rs.length)}</span><span class="l">個里</span></div><div><span class="n">${fmt(c.e)}</span><span class="l">位長輩</span></div></div>
-    <div><p class="lbl">怎麼做</p><ol class="steps">${k.do.map(s=>`<li>${s}</li>`).join('')}</ol></div>
-    <p class="who">找誰：${k.who}</p>
-    ${leverHTML(k)}
-    <div class="change"><span class="t">做了會改變</span><span class="m">${ch.m}</span><span class="s">${ch.s}</span></div>
-    ${footHTML(k)}</div>`}
-function otherRow(c,n){const k=c.k,op=openPkg===k.id,ch=changeOf(k,c.rs);
-  return `<div class="pr${op?' open':''}${PLAN[k.id].on?'':' off'}" id="pc-${k.id}"><button class="pr-h" data-open="${k.id}" aria-expanded="${op}"><span class="rk">${n}</span><span class="tt">${k.t}<small>${fmt(c.rs.length)} 個里・${fmt(c.e)} 位長輩</small></span><span class="chev">${op?'－':'＋'}</span></button>
-  ${op?`<div class="pr-b"><div><p>${k.why}。集中在${topDists(c.rs)}。</p><div><p class="lbl">怎麼做</p><ol class="steps">${k.do.map(s=>`<li>${s}</li>`).join('')}</ol></div><p class="who">找誰：${k.who}</p></div>
-  <div>${leverHTML(k)}<div class="change"><span class="t">做了會改變</span><span class="m">${ch.m}</span><span class="s">${ch.s}</span></div>${footHTML(k)}</div></div>`:''}</div>`}
-function renderDistRank(S){
-  const rows=Object.entries(groupBy(S,r=>r.d)).map(([d,a])=>{const hr=a.filter(r=>r.S0.reds>0);return{d,n:a.length,h:hr.length,e:sum(hr,'e65')}}).filter(r=>r.e>0).sort((a,b)=>b.e-a.e).slice(0,8);
+function renderDistPop(df){
+  const rows=Object.entries(groupBy(DATA,r=>r.d)).map(([d,a])=>({d,e:sum(a,'e65'),p:pct(sum(a,'e65'),sum(a,'pop'))})).sort((a,b)=>b.e-a.e);
   const mx=Math.max(...rows.map(r=>r.e),1);
-  $('distRank').innerHTML=rows.length?rows.map(r=>`<button class="drow" data-dist="${r.d}"><span>${r.d}</span><span class="tr"><span style="width:${r.e/mx*100}%"></span></span><span class="num">${fmt(r.e)} 人</span></button>`).join(''):'<p class="note">目前沒有高風險的里。</p>';
+  $('distRank').innerHTML=rows.map(r=>`<button class="drow" data-dist="${r.d}"${df&&df!==r.d?' style="opacity:.45"':''}><span>${r.d}</span><span class="tr"><span style="width:${r.e/mx*100}%;background:var(--accent)"></span></span><span class="num">${fmt(r.e)} 人・${r.p.toFixed(1)}%</span></button>`).join('');
+}
+function renderCityDoms(S){
+  $('cityDoms').innerHTML=DOMS.map(([d,t])=>{const r=S.filter(x=>x.S0.L[d]==='red').length,y=S.filter(x=>x.S0.L[d]==='yel').length,its=SCORED.filter(i=>i.d===d),has=its.filter(i=>S.some(x=>isN(x.V0[i.id]))).length;
+    return `<button class="ftile${r?' red':''}${cDom===d?' sel':''}" data-cdom="${d}" aria-pressed="${cDom===d}"><span class="h">${t}<span class="sm muted">${its.length} 項指標</span></span><span class="s"><b class="r">${fmt(r)}</b> 個里高風險・${fmt(y)} 個里需留意</span><span class="sm muted">${has} 項已有資料，其他待提供</span></button>`}).join('');
+  let sub='',rows='';
+  IND.filter(i=>i.d===cDom).forEach(i=>{if(i.sub!==sub){sub=i.sub;rows+=`<tr class="sub"><td colspan="4">${sub}</td></tr>`}
+    const vals=S.map(r=>r.V0[i.id]).filter(isN),med=median(vals),w=S.filter(r=>isN(r.S0.P[i.id])).sort((a,b)=>b.S0.P[i.id]-a.S0.P[i.id])[0];
+    rows+=`<tr><td>${i.n}<br><span class="sm muted">${i.u}・${i.src}</span></td><td class="n">${vals.length?fv(med,i.u):'<span class="muted">待提供</span>'}</td><td class="n muted">${vals.length} / ${S.length}</td><td>${w?`<button class="lnk" data-k="${key(w)}">${w.d} ${w.v}</button><br><span class="sm muted">${fv(w.V0[i.id],i.u)}${unit(i.u)}</span>`:'<span class="muted">—</span>'}</td></tr>`});
+  $('cityInd').innerHTML=`<div class="sec-h"><h2>${DNAME[cDom]}：${IND.filter(i=>i.d===cDom).length} 項指標</h2><p>點里名看那個里</p></div><div class="tbl"><table class="itbl"><thead><tr><th>指標</th><th style="text-align:right">全市中位數</th><th style="text-align:right">有資料的里</th><th>最需要注意的里</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function placeD(){const p={...LAYOUT};let e=0;[...new Set(DATA.map(x=>x.d))].forEach(d=>{if(!p[d]){p[d]=[e%8,5+Math.floor(e/8)];e++}});return p}
-function tileCls(r){if(selPkg){const k=PKG.find(z=>z.id===selPkg);return r.pk.some(o=>o.k===k)?'tgt':'none'}if(mapMode==='after'&&r.S1)return ptCls(r.S1.pts);return ptCls(r.S0.pts)}
+function tileCls(r){return mapMode==='all'?ptCls(r.S0.pts):r.S0.L[mapMode]}
 function renderMap(S,df){
-  const k=selPkg&&PKG.find(z=>z.id===selPkg);
-  $('mapTitle').textContent=k?`「${k.t}」要去的里`:mapMode==='after'?'做了以後的風險地圖':'現在的風險地圖';
-  $('mapChips').innerHTML=[['now','現在'],['after','做了以後']].map(([m,t])=>`<button class="chip" data-mm="${m}" aria-pressed="${!selPkg&&mapMode===m}">${t}</button>`).join('');
-  $('mapLegend').innerHTML=k?`<span><span class="sw" style="background:var(--accent)"></span>要去的里</span><span><span class="sw" style="background:var(--none)"></span>其他</span>`
-    :`<span><span class="sw" style="background:var(--red)"></span>高風險</span><span><span class="sw" style="background:var(--yel-bg)"></span>需留意</span><span><span class="sw" style="background:var(--grn)"></span>穩定</span>`;
+  $('mapTitle').textContent=mapMode==='all'?'綜合風險地圖':DNAME[mapMode]+'風險地圖';
+  $('mapChips').innerHTML=[['all','綜合'],...DOMS].map(([m,t])=>`<button class="chip" data-mm="${m}" aria-pressed="${mapMode===m}">${t}</button>`).join('');
+  $('mapLegend').innerHTML=`<span><span class="sw" style="background:var(--red)"></span>高風險</span><span><span class="sw" style="background:var(--yel-bg)"></span>需留意</span><span><span class="sw" style="background:var(--grn)"></span>穩定</span>${mapMode==='all'?'':'<span><span class="sw" style="background:var(--none)"></span>資料不足</span>'}`;
   const CW=140,CH=200,T=16,Gp=2,pos=placeD(),G=groupBy(DATA,x=>x.d),rows=Math.max(...Object.values(pos).map(p=>p[1]))+1;let s='';
-  Object.entries(G).forEach(([d,arr])=>{const[c,r]=pos[d],x0=c*CW+4,y0=r*CH+4,red=arr.filter(x=>ptCls(x.S0.pts)==='red').length;
+  Object.entries(G).forEach(([d,arr])=>{const[c,r]=pos[d],x0=c*CW+4,y0=r*CH+4,red=arr.filter(x=>tileCls(x)==='red').length;
     s+=`<g class="${df&&df!==d?'dim':''}"><rect class="dbg${df===d?' hl':''}" x="${x0}" y="${y0}" width="${CW-8}" height="${CH-8}" rx="8"/><text class="dlabel" x="${x0+8}" y="${y0+19}">${d}</text><text class="dsub" x="${x0+CW-16}" y="${y0+19}" text-anchor="end">${red}/${arr.length}</text>`;
-    arr.forEach((x,i)=>{const tx=x0+8+(i%7)*(T+Gp),ty=y0+28+Math.floor(i/7)*(T+Gp);s+=`<rect class="tile ${tileCls(x)}" x="${tx}" y="${ty}" width="${T}" height="${T}" rx="3" tabindex="0" data-k="${key(x)}"><title>${d} ${x.v}｜第 ${x.rank} 優先${x.pk[0]?'｜最需要：'+x.pk[0].k.t:''}</title></rect>`});s+='</g>'});
+    arr.forEach((x,i)=>{const tx=x0+8+(i%7)*(T+Gp),ty=y0+28+Math.floor(i/7)*(T+Gp),rd=domsOf(x,'red');s+=`<rect class="tile ${tileCls(x)}" x="${tx}" y="${ty}" width="${T}" height="${T}" rx="3" tabindex="0" data-k="${key(x)}"><title>${d} ${x.v}｜第 ${x.rank} 優先${rd.length?'｜高風險：'+rd.join('、'):''}</title></rect>`});s+='</g>'});
   const svg=$('cityMap');svg.setAttribute('viewBox',`0 0 ${(Math.max(...Object.values(pos).map(p=>p[0]))+1)*CW} ${rows*CH}`);svg.innerHTML=s;
 }
 function renderList(S){
-  const qq=$('nameFilter').value.trim(),k=selPkg&&PKG.find(z=>z.id===selPkg);
-  let a=[...S].sort((x,y)=>x.rank-y.rank).filter(x=>!qq||x.v.includes(qq)||x.d.includes(qq));if(k)a=a.filter(r=>r.pk.some(o=>o.k===k));
+  const qq=$('nameFilter').value.trim();
+  const a=[...S].sort((x,y)=>x.rank-y.rank).filter(x=>!qq||x.v.includes(qq)||x.d.includes(qq));
   $('listCount').textContent=a.length+' 個里';
-  $('plist').innerHTML=a.slice(0,100).map(x=>`<button class="vrow" data-k="${key(x)}"><span class="rk">${x.rank}</span><span><span class="nm">${x.v}<small>${x.d}</small></span><br><span class="rc">${x.pk.length?'最需要：'+x.pk[0].k.t:'目前穩定'}</span></span></button>`).join('');
+  $('plist').innerHTML=a.slice(0,100).map(x=>{const rd=domsOf(x,'red'),yl=domsOf(x,'yel');return `<button class="vrow" data-k="${key(x)}"><span class="rk">${x.rank}</span><span><span class="nm">${x.v}<small>${x.d}</small></span><br><span class="rc">${rd.length?'高風險：'+rd.join('、'):yl.length?'需留意：'+yl.join('、'):'目前穩定'}</span></span></button>`}).join('');
 }
 function renderMatrix(df){
   const G=groupBy(DATA,x=>x.d),rows=Object.entries(G).map(([d,a])=>({d,n:a.length,c:DOMS.map(([k])=>a.filter(x=>x.S0.L[k]==='red').length),t:a.filter(x=>x.S0.reds>0).length})).sort((a,b)=>b.t/b.n-a.t/a.n);
@@ -652,109 +554,59 @@ function renderMatrix(df){
 }
 
 /* ================= 我的里 ================= */
-function openVillage(k){
+function openVillage(k,keep){
   const x=DATA.find(r=>key(r)===k)||[...DATA].sort((a,b)=>a.rank-b.rank)[0];cur=x;setView('village');
   $('vDistSel').value=x.d;fillVSel(x.d);$('vSel').value=key(x);
   $('vDist').textContent='臺北市 '+x.d;$('vName').textContent=x.v;
-  const lv=ptCls(x.S0.pts),reds=DOMS.filter(([d])=>x.S0.L[d]==='red').map(([,t])=>t);
+  const lv=ptCls(x.S0.pts),reds=domsOf(x,'red');
   $('vhero').className='vhero '+lv;
-  $('vSay').innerHTML=`${pill(lv)}　全市第 ${x.rank} 優先（共 ${DATA.length} 里）。<br>`+(lv==='red'?(reds.length?`「${reds.join('、')}」比較弱，這里需要你。`:'這里需要你。'):lv==='yel'?(reds.length?`「${reds.join('、')}」要多留意。`:'有幾項要多留意。'):'整體穩定，維持現在的服務就好。')+(x.S0.trend?'<br><span class="sm" style="color:var(--yel)">本里變老的速度是全市最快的一群。</span>':'');
+  $('vSay').innerHTML=`${pill(lv)}　全市第 ${x.rank} 優先（共 ${DATA.length} 里）。<br>`+(lv==='red'?(reds.length?`「${reds.join('、')}」比較弱，這里需要你。`:'這里需要你。'):lv==='yel'?(reds.length?`「${reds.join('、')}」要多留意。`:'有幾項要多留意。'):'整體穩定。')+(x.S0.trend?'<br><span class="sm" style="color:var(--yel)">本里變老的速度是全市最快的一群。</span>':'');
   const tr=trendOf(x),proj=tr?linProj(tr,5):null;
   $('vFacts').innerHTML=[
+    [fmt(x.pop),'總人口'],
     [fmt(x.e65),`65 歲以上（${pct(x.e65,x.pop).toFixed(0)}%）`],
     [isN(x.e80)?fmt(x.e80):'—','80 歲以上'],
     [isN(x.alone)?mask(x.alone):'—','獨居長輩'],
     [proj?'+'+fmt(Math.max(0,proj[4]-x.e65)):'—','5 年後多出的長輩（依 110–115 年推估）']
   ].map(([n,l])=>`<div class="bignum"><span class="k">${l}</span><span class="v">${n}</span></div>`).join('');
   $('vSmall').innerHTML=(isN(x.sig)?`<p class="sm muted">戶籍 ${fmt(x.pop)} 人，實際住在這裡約 ${fmt(x.pop*x.sig)} 人（依電信資料推估）。</p>`:'')+(x.e65<300?'<p class="warn">本里長輩人數少，比例容易因一兩人變動，請搭配人數看。</p>':'');
-  const ks=x.pk.slice(0,3);
-  $('needs').innerHTML=ks.length?ks.map((o,i)=>needCard(x,o,i)).join(''):'<p class="note">目前沒有明顯落後的地方。持續關心獨居和 80 歲以上長輩就好。</p>';
-  renderTasks(x,ks);
-  const o={red:0,yel:1,grn:2,none:3};
-  $('five').innerHTML=[...DOMS].sort((a,b)=>o[x.S0.L[a[0]]]-o[x.S0.L[b[0]]]).map(([d,t])=>{
+  drawTrend(tr,'trend');
+  const o={red:0,yel:1,grn:2,none:3},ord=[...DOMS].sort((a,b)=>o[x.S0.L[a[0]]]-o[x.S0.L[b[0]]]);
+  if(!keep||!vDom)vDom=ord[0][0];
+  $('five').innerHTML=ord.map(([d,t])=>{
     const cand=SCORED.filter(i=>i.d===d&&x.S0.P[i.id]!==null).sort((a,b)=>x.S0.P[b.id]-x.S0.P[a.id]);const w=cand.find(i=>i.l!=='C'&&x.S0.P[i.id]>=.5)||cand[0];
-    const s=x.S0.L[d]==='none'?'還沒有資料，待機關提供（見右側「資料」）':w&&x.S0.P[w.id]>=.5?plain(w.id,x):'各項都在全市中段以上';const dm=x.S0.DM[d];
-    return `<div class="ftile ${x.S0.L[d]}"><div class="h">${t}${pill(x.S0.L[d])}</div><p class="s">${s}</p>${dm!==null?`<div class="pbar" role="img" aria-label="全市位置 ${Math.round(dm*100)}"><i style="left:calc(${dm*100}% - 3px)"></i></div><div class="pbar-l"><span>比較好</span><span>比較落後</span></div>`:''}</div>`}).join('');
-  drawTrend(x);drawNb(x);
-  const hot=x.hot||[];$('hotRows').innerHTML=hot.length?hot.map(h=>`<tr><td>${h[0]}</td><td>${h[1]}</td><td class="num">${mask(+h[2])}</td></tr>`).join(''):'<tr><td colspan="3" class="muted">待提供路口資料</td></tr>';
-  $('domPanels').innerHTML=DOMS.map(([d,t])=>domPanel(x,d,t)).join('');
-  renderTool(currentTool);
-  try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}
-}
-function needCard(x,o,i){
-  const k=o.k,lv=o.sev>=.9?'':'yel',P=PLAN[k.id];
-  const whys=k.tr.map(id=>({id,p:x.S0.P[id]===null?null:x.S0.P[id]-(INDM[id].l==='C'?.05:0)})).filter(z=>z.p!==null&&z.p>=.45).sort((a,b)=>b.p-a.p).slice(0,2).map(z=>plain(z.id,x)).filter(Boolean);
-  let ch;
-  if(k.eff){const e=k.eff([x],P.v);ch=`<span class="m">${e.m}</span><span class="s">${e.s}</span>`}
-  else{const a=after(x,[k]);ch=`<span class="m">${DNAME[k.dom]}：${LVT[x.S0.L[k.dom]]} → <b class="g">${LVT[a.L[k.dom]]}</b></span><span class="s">全市排名從第 ${x.rank} 名，移到約第 ${fmt(Math.max(x.rank,DATA.filter(r=>r.S0.pts>a.pts).length+1))} 名</span>`}
-  return `<div class="ncard ${lv}"><span class="idx">${i+1}</span><h3>${k.t}</h3>
-    <div><p class="lbl">為什麼</p><ul>${whys.map(w=>`<li>${w}</li>`).join('')}</ul></div>
-    <div><p class="lbl">怎麼做</p><ol class="steps">${k.do.map(s=>`<li>${s}</li>`).join('')}</ol></div>
-    <p class="who">找誰：${k.who}</p>
-    <div class="change"><span class="t">做了會改變</span>${ch}</div></div>`;
-}
-function tget(x){try{return JSON.parse(localStorage.getItem('zl.t.'+key(x))||'[]')}catch(e){return[]}}
-function tset(x,a){try{localStorage.setItem('zl.t.'+key(x),JSON.stringify(a))}catch(e){}}
-const TMEM={};
-function renderTasks(x,ks){
-  const done=new Set(TMEM[key(x)]||tget(x));
-  const all=[...ks.map(o=>({t:o.k.t,items:o.k.do.map((s,j)=>({id:o.k.id+':'+j,s}))})),{t:'每年固定要做',items:[{id:'base:0',s:'和鄰長核對 80 歲以上、獨居長輩人數'},{id:'base:1',s:'更新里內據點與醫療資源清單'}]}];
-  const total=all.reduce((a,g)=>a+g.items.length,0),dn=all.reduce((a,g)=>a+g.items.filter(i=>done.has(i.id)).length,0);
-  $('taskProg').innerHTML=`已完成 <b class="g">${dn}</b> / ${total} 項`;$('taskBar').style.width=(total?dn/total*100:0)+'%';
-  $('tasks').innerHTML=all.map(g=>`<div class="tgrp"><h3>${g.t}</h3>${g.items.map(i=>`<label class="task${done.has(i.id)?' done':''}"><input type="checkbox" data-task="${i.id}" ${done.has(i.id)?'checked':''}><span>${i.s}</span></label>`).join('')}</div>`).join('');
+    const s=x.S0.L[d]==='none'?'還沒有資料，待機關提供':w&&x.S0.P[w.id]>=.5?plain(w.id,x):'各項都在全市中段以上';const dm=x.S0.DM[d];
+    return `<button class="ftile ${x.S0.L[d]}${vDom===d?' sel':''}" data-vdom="${d}" aria-pressed="${vDom===d}"><span class="h">${t}${pill(x.S0.L[d])}</span><span class="s">${s}</span>${dm!==null?`<span class="pbar" role="img" aria-label="全市位置 ${Math.round(dm*100)}"><i style="left:calc(${dm*100}% - 3px)"></i></span><span class="pbar-l"><span>比較好</span><span>比較落後</span></span>`:''}<span class="sm muted">${vDom===d?'▼ 指標在下方':'點這裡看指標'}</span></button>`}).join('');
+  $('domPanels').innerHTML=domPanel(x,vDom,DNAME[vDom]);
+  $('popPanel').innerHTML=domPanel(x,'pop','人口');
+  if(!keep){try{window.scrollTo({top:0,behavior:'smooth'})}catch(e){}}
 }
 function domPanel(x,d,t){
   let sub='',rows='';IND.filter(i=>i.d===d).forEach(i=>{if(i.sub!==sub){sub=i.sub;rows+=`<tr class="sub"><td colspan="5">${sub}</td></tr>`}
     const v=x.V0[i.id],p=x.S0.P[i.id],med=median(DATA.map(r=>r.V0[i.id]).filter(isN));
     rows+=`<tr><td>${i.n}<br><span class="sm muted">${i.u}</span></td><td><span class="lv ${i.info?'X':i.l}" title="${i.src}">${i.info?'參考':i.l}</span></td><td class="n">${isN(v)?fv(v,i.u):'<span class="muted">待提供</span>'}</td><td class="n muted">${fv(med,i.u)}</td><td style="min-width:90px">${p!==null&&!i.info?`<div class="pbar" title="風險位階 ${Math.round(p*100)}"><i style="left:calc(${p*100}% - 3px)"></i></div>`:'<span class="muted">—</span>'}</td></tr>`});
-  return `<div class="panel"><div class="sec-h"><h3>${t}</h3>${pill(x.S0.L[d])}</div><div class="tbl"><table class="itbl"><thead><tr><th>指標</th><th>級</th><th style="text-align:right">本里</th><th style="text-align:right">全市中位數</th><th>位置</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+  return `<div class="panel"><div class="sec-h"><h3>${t}</h3>${x.S0.L[d]?pill(x.S0.L[d]):''}</div><div class="tbl"><table class="itbl"><thead><tr><th>指標</th><th>級</th><th style="text-align:right">本里</th><th style="text-align:right">全市中位數</th><th>位置</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
 }
 function fillVSel(d){$('vSel').innerHTML=DATA.filter(x=>x.d===d).sort((a,b)=>a.rank-b.rank).map(x=>`<option value="${key(x)}">${x.v}（第 ${x.rank} 優先）</option>`).join('')}
 function trendOf(x){return x.t65&&x.t65.length>=2?x.t65:null}
 function linProj(a,n){const k=a.length,mx=(k-1)/2,my=a.reduce((p,q)=>p+q,0)/k;let nu=0,de=0;a.forEach((v,i)=>{nu+=(i-mx)*(v-my);de+=(i-mx)**2});const b=nu/de,c=my-b*mx;return Array.from({length:n},(_,j)=>Math.max(0,Math.round(c+b*(k+j))))}
 function niceStep(m){const r=m/4,p=Math.pow(10,Math.floor(Math.log10(r||1)));const n=r/p;return(n<1.5?1:n<3?2:n<7?5:10)*p}
-function drawTrend(x){
-  const t65=trendOf(x);if(!t65){$('trend').innerHTML='<text x="320" y="130" text-anchor="middle">待提供歷年人口</text>';return}
+function drawTrend(t65,id){
+  if(!t65){$(id).innerHTML='<text x="320" y="130" text-anchor="middle">待提供歷年人口</text>';return}
   const n=t65.length,N=n+5,y0=115-(n-1),p65=linProj(t65,5),max=Math.max(...p65,...t65)*1.12||10;
-  const W=640,H=260,l=62,r=20,t=16,b=32,iw=W-l-r,ih=H-t-b,X=i=>l+i/(N-1)*iw,Yv=v=>t+ih-v/max*ih;let s='';
+  const W=640,H=260,l=82,r=20,t=16,b=32,iw=W-l-r,ih=H-t-b,X=i=>l+i/(N-1)*iw,Yv=v=>t+ih-v/max*ih;let s='';
   const st=niceStep(max);for(let v=0;v<=max;v+=st)s+=`<line class="g" x1="${l}" x2="${W-r}" y1="${Yv(v)}" y2="${Yv(v)}"/><text x="${l-8}" y="${Yv(v)+5}" text-anchor="end">${fmt(v)}</text>`;
   for(let i=0;i<N;i+=2)s+=`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${y0+i}年</text>`;
   s+=`<line class="g" x1="${X(n-1)}" x2="${X(n-1)}" y1="${t}" y2="${t+ih}" stroke-dasharray="3 4"/><text x="${X(n-1)+6}" y="${t+14}">115 年 9 月</text>`;
   const P=(a,o)=>a.map((v,i)=>`${i?'L':'M'}${X(i+o).toFixed(1)},${Yv(v).toFixed(1)}`).join('');
   s+=`<path class="l65" d="${P(t65,0)}"/><path class="l65 proj" d="${P([t65[n-1],...p65],n-1)}"/>`;
   s+=`<circle class="p65" cx="${X(n-1)}" cy="${Yv(t65[n-1])}" r="5"/><text x="${X(N-1)}" y="${Yv(p65[4])-10}" text-anchor="end" style="fill:var(--ink);font-weight:500">${fmt(p65[4])} 人</text>`;
-  $('trend').innerHTML=s;
+  $(id).innerHTML=s;
 }
-function drawNb(x){
-  const nb=x.nb||[];if(!nb.length){$('nbChart').innerHTML='<text x="160" y="105" text-anchor="middle">待提供各鄰資料</text>';return}
-  const top=nb.map((v,i)=>[i,v]).sort((a,b)=>b[1]-a[1]).slice(0,3).map(t=>t[0]),W=320,H=210,l=34,b=26,t=10,iw=W-l-6,ih=H-t-b,max=Math.max(...nb)*1.15||1,bw=iw/nb.length;let s='';
-  [0,Math.round(max/2)].forEach(v=>{const y=t+ih-v/max*ih;s+=`<line class="g" x1="${l}" x2="${W-6}" y1="${y}" y2="${y}"/><text x="${l-6}" y="${y+5}" text-anchor="end">${v}</text>`});
-  nb.forEach((v,i)=>{const h=v/max*ih,xx=l+i*bw+bw*.15;s+=`<rect class="bar${top.includes(i)?' top':''}" x="${xx.toFixed(1)}" y="${(t+ih-h).toFixed(1)}" width="${(bw*.7).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${i+1} 鄰：${v} 人</title></rect>`;if(nb.length<=12||top.includes(i))s+=`<text x="${(xx+bw*.35).toFixed(1)}" y="${H-6}" text-anchor="middle">${i+1}</text>`});
-  $('nbChart').innerHTML=s;
-}
-function renderTool(k){
-  const x=cur;if(!x)return;const tr=trendOf(x),proj=tr?linProj(tr,5):[x.e65,x.e65,x.e65,x.e65,x.e65],hot=x.hot||[];let t;
-  const line=id=>{const i=INDM[id],v=x.V0[id],med=median(DATA.map(r=>r.V0[id]).filter(isN));return isN(v)?`${i.n} ${fv(v,i.u)}${unit(i.u)}（全市中位數 ${fv(med,i.u)}）`:null};
-  if(k==='fund'){const reds=DOMS.filter(([d])=>x.S0.L[d]==='red').map(([,t])=>t);
-    t=`【${x.d}${x.v}高齡服務需求說明】\n\n本里依國家發展委員會超高齡社會五大領域風險指標評估，於全市 ${DATA.length} 個里中列第 ${x.rank} 優先${reds.length?'，高風險面向為「'+reds.join('、')+'」':''}${x.S0.trend?'，且高齡化速度屬全市最快的四分之一':''}。\n\n一、現況：戶籍人口 ${fmt(x.pop)} 人，65 歲以上 ${fmt(x.e65)} 人（${pct(x.e65,x.pop).toFixed(1)}%），推估 5 年後達 ${fmt(proj[4])} 人。${[line('alone'),line('oldDep')].filter(Boolean).join('；')}。\n\n二、主要需求：\n${x.pk.slice(0,3).map((o,i)=>`${i+1}. ${o.k.t}：${o.k.tr.map(line).filter(Boolean).join('；')}`).join('\n')||'（無）'}\n\n三、申請項目與預期效益：（請填寫）\n\n資料來源：內政部戶政司、交通部、衛福部、社會局等機關資料，指標架構依國發會超高齡社會風險指標公式草案。`}
-  else if(k==='petition'){const h=hot[0]||['（地點）','（型態）',0];t=`主旨：建請改善本里「${h[0]}」長輩通行安全。\n\n說明：\n一、依臺北市警察局及警政署交通事故資料，本里 2023–2025 年 65 歲以上長輩行人被撞事故 ${isN(x.acc)?mask(x.acc):'（待填）'} 件，其中「${h[0]}」${mask(+h[2])} 件，主要型態為${h[1]}。\n二、本里 65 歲以上人口 ${fmt(x.e65)} 人，佔 ${pct(x.e65,x.pop).toFixed(1)}%。\n三、建請評估：延長行人綠燈秒數、增設行人庇護島或標線型人行道、加強照明與警示。\n\n${x.d}${x.v}辦公處 敬上`}
-  else if(k==='d100'){
-    const T0=new Date(),ad=n=>{const d=new Date(T0);d.setDate(d.getDate()+n);return `${d.getMonth()+1}/${d.getDate()}`};
-    const ks=(x.pk.length?x.pk:[{k:PKG.find(p=>p.id==='care')}]).slice(0,3).map(o=>o.k);
-    const reds=DOMS.filter(([d])=>x.S0.L[d]==='red').map(([,t])=>t),h=hot[0];
-    const who=[...new Set(ks.flatMap(k=>k.who.split('、')))].filter(w=>w!=='里辦公處').join('、');
-    const act=(i)=>ks.map(k=>`・【${k.t}】${k.do[i]}`).join('\n');
-    const goal=k=>{const P=PLAN[k.id];return `・${k.t}：${k.lv.n} ${P.v}${unit(k.lv.u)}（依據：${k.tr.filter(id=>isN(x.S0.P[id])).sort((a,b)=>x.S0.P[b]-x.S0.P[a]).map(line).filter(Boolean)[0]||k.why}）`};
-    t=`【${x.d}${x.v} 高齡安心 100 日行動計畫】\n期間：第 1 日（${ad(0)}）至第 100 日（${ad(99)}）\n\n本里於全市 ${DATA.length} 個里中列第 ${x.rank} 優先${reds.length?'，高風險面向：'+reds.join('、'):''}。65 歲以上 ${fmt(x.e65)} 人（${pct(x.e65,x.pop).toFixed(1)}%）。\n本次聚焦：${ks.map(k=>k.t).join('、')}\n\n一、第 1–30 日（${ad(0)}–${ad(29)}）盤點與啟動\n・召開里內工作會議，確認鄰長、志工、據點分工\n・名冊比對：80 歲以上 ${isN(x.e80)?fmt(x.e80)+' 人':'（待提供）'}、獨居長輩${isN(x.alone)?' '+fmt(x.alone)+' 人':'（待提供）'}\n${act(0)}\n檢核點（第 30 日）：完成名單與分工表，聯繫 ${who}\n\n二、第 31–60 日（${ad(30)}–${ad(59)}）試辦\n${act(1)}${h?`\n・將「${h[0]}」列為優先改善地點，送出路口改善陳情（可用「路口改善陳情」頁籤）`:''}\n檢核點（第 60 日）：至少 1 項服務實際上線，記錄參與人次\n\n三、第 61–100 日（${ad(60)}–${ad(99)}）擴大與檢核\n${act(2)}\n・依試辦結果提出經費申請（可用「經費申請佐證」頁籤）\n・里民大會報告成果，決定下一期延續項目\n檢核點（第 100 日）：對照下列目標，未達成者列出原因\n\n四、100 日目標\n${ks.map(goal).join('\n')}\n\n五、協力單位\n${who}\n\n資料來源：臺北市開放資料、國發會超高齡社會五大領域風險指標公式草案；標「待提供」者需向機關申請。`}
-  else t=`【${x.v}高溫關懷提醒】\n今天很熱，請家中長輩：\n・上午 10 點到下午 4 點盡量不要出門\n・每小時喝一杯水，不要等口渴\n・頭暈、想吐、心跳很快，馬上休息並打 119\n\n里內涼爽的地方：（請填活動中心地址、開放時間）\n家裡有獨居長輩需要人去看看，請回覆這則訊息或打給里辦公處。`;
-  $('toolText').value=t;
-}
-
 /* ================= 說明與匯入 ================= */
 function renderIndTable(){
-  let html='';DOMS.forEach(([d,t])=>{html+=`<h3 style="margin:22px 0 8px">${t}</h3><table class="t"><thead><tr><th>指標</th><th>級</th><th>公式</th><th>來源</th><th style="text-align:right">有資料的里</th></tr></thead><tbody>${IND.filter(i=>i.d===d).map(i=>`<tr><td>${i.n}<br><span class="sm muted">${i.sub}・${i.u}</span></td><td><span class="lv ${i.info?'X':i.l}">${i.info?'參考':i.l}</span></td><td>${i.f}</td><td class="muted">${i.src}</td><td class="num">${DATA.filter(r=>isN(r.V0[i.id])).length} / ${DATA.length}</td></tr>`).join('')}</tbody></table>`});
-  html+=`<h3 style="margin:22px 0 8px">政策與觸發指標</h3><table class="t"><thead><tr><th>政策</th><th>看哪些指標</th><th>找誰</th></tr></thead><tbody>${PKG.map(k=>`<tr><td>${k.t}</td><td>${k.tr.map(id=>INDM[id].n).join('、')}</td><td class="muted">${k.who}</td></tr>`).join('')}</tbody></table>`;
-  html+=`<h3 style="margin:22px 0 8px">草案中暫不納入里級計分</h3><table class="t"><thead><tr><th>面向</th><th>指標</th><th>機關</th><th>原因</th></tr></thead><tbody>${EXCLUDED.map(e=>`<tr><td>${e[0]}</td><td>${e[1]}</td><td class="muted">${e[2]}</td><td>${e[3]}</td></tr>`).join('')}</tbody></table>`;
+  let html='';[...DOMS,['pop','人口（背景，不計分）']].forEach(([d,t])=>{html+=`<h3 style="margin:22px 0 8px">${t}</h3><table class="t"><thead><tr><th>指標</th><th>級</th><th>公式</th><th>來源</th><th style="text-align:right">有資料的里</th></tr></thead><tbody>${IND.filter(i=>i.d===d).map(i=>`<tr><td>${i.n}<br><span class="sm muted">${i.sub}・${i.u}</span></td><td><span class="lv ${i.info?'X':i.l}">${i.info?'參考':i.l}</span></td><td>${i.f}</td><td class="muted">${i.src}</td><td class="num">${DATA.filter(r=>isN(r.V0[i.id])).length} / ${DATA.length}</td></tr>`).join('')}</tbody></table>`});
+  html+=`<h3 style="margin:22px 0 8px">暫不納入里級計分的指標</h3><table class="t"><thead><tr><th>面向</th><th>指標</th><th>機關</th><th>原因</th></tr></thead><tbody>${EXCLUDED.map(e=>`<tr><td>${e[0]}</td><td>${e[1]}</td><td class="muted">${e[2]}</td><td>${e[3]}</td></tr>`).join('')}</tbody></table>`;
   $('indTable').innerHTML=html;
 }
 function renderColTable(){
@@ -777,20 +629,12 @@ function setFS(f){if(f==='m')document.documentElement.removeAttribute('data-fs')
   document.querySelectorAll('[data-fs]').forEach(b=>{if(b.tagName==='BUTTON')b.setAttribute('aria-pressed',b.dataset.fs===f)});try{localStorage.setItem('zl.fs',f)}catch(e){}}
 document.addEventListener('click',e=>{
   const fsb=e.target.closest('button[data-fs]');if(fsb){setFS(fsb.dataset.fs);return}
-  if(e.target.closest('input,label.lever,label.chk,label.task'))return;
   const nv=e.target.closest('[data-view]');if(nv){const v=nv.dataset.view;if(v==='village')openVillage(cur?key(cur):null);else{setView(v);if(v==='city')renderCity()}return}
-  const op=e.target.closest('[data-open]');if(op){openPkg=openPkg===op.dataset.open?null:op.dataset.open;renderCity();return}
-  const pk=e.target.closest('[data-pk]');if(pk){selPkg=selPkg===pk.dataset.pk?null:pk.dataset.pk;renderCity();if(selPkg){try{$('cityMap').scrollIntoView({behavior:'smooth',block:'center'})}catch(err){}}return}
+  const cd=e.target.closest('[data-cdom]');if(cd){cDom=cd.dataset.cdom;renderCityDoms(scope());return}
+  const vd=e.target.closest('[data-vdom]');if(vd&&cur){vDom=vd.dataset.vdom;openVillage(key(cur),true);return}
   const t=e.target.closest('[data-k]');if(t){openVillage(t.dataset.k);return}
-  const mm=e.target.closest('[data-mm]');if(mm){mapMode=mm.dataset.mm;selPkg=null;renderCity();return}
-  const ds=e.target.closest('[data-dist]');if(ds){$('distFilter').value=ds.dataset.dist;renderCity();try{window.scrollTo({top:0,behavior:'smooth'})}catch(err){}return}
-  const tb=e.target.closest('[data-tool]');if(tb){currentTool=tb.dataset.tool;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-selected',b===tb));renderTool(currentTool)}
-});
-document.addEventListener('input',e=>{const l=e.target.closest('[data-lv]');if(l){const k=PKG.find(z=>z.id===l.dataset.lv);l.parentElement.querySelector('.val').textContent=l.value+' '+k.lv.u}});
-document.addEventListener('change',e=>{
-  const c=e.target.closest('[data-on]');if(c){PLAN[c.dataset.on].on=c.checked;renderCity();return}
-  const l=e.target.closest('[data-lv]');if(l){PLAN[l.dataset.lv].v=+l.value;const id=l.id;renderCity();const el=$(id);if(el)el.focus({preventScroll:true});return}
-  const tk=e.target.closest('[data-task]');if(tk&&cur){const k=key(cur),set=new Set(TMEM[k]||tget(cur));tk.checked?set.add(tk.dataset.task):set.delete(tk.dataset.task);TMEM[k]=[...set];tset(cur,TMEM[k]);renderTasks(cur,cur.pk.slice(0,3))}
+  const mm=e.target.closest('[data-mm]');if(mm){mapMode=mm.dataset.mm;renderCity();return}
+  const ds=e.target.closest('[data-dist]');if(ds){$('distFilter').value=$('distFilter').value===ds.dataset.dist?'':ds.dataset.dist;renderCity();return}
 });
 document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('rect.tile')){e.preventDefault();openVillage(e.target.dataset.k)}});
 $('modeSel').onchange=()=>{MODE=$('modeSel').value;rescore();refresh()};
@@ -799,11 +643,10 @@ $('nameFilter').oninput=()=>renderList(scope());
 $('vDistSel').onchange=()=>{fillVSel($('vDistSel').value);openVillage($('vSel').value)};
 $('vSel').onchange=()=>openVillage($('vSel').value);
 function copy(text,ta,msgEl){const done=()=>{msgEl.textContent='已複製';setTimeout(()=>msgEl.textContent='',2000)},fb=()=>{if(ta)ta.select();msgEl.textContent='已選取，請按 Ctrl+C 複製'};try{navigator.clipboard.writeText(text).then(done,fb)}catch(e){fb()}}
-$('copyBtn').onclick=()=>copy($('toolText').value,$('toolText'),$('toast'));
 $('tplBtn').onclick=()=>{$('csvIn').value=TPL};
 $('copyHead').onclick=()=>copy(HEAD,null,$('importMsg'));
 function fillSelects(){const ds=[...new Set(DATA.map(x=>x.d))];$('distFilter').innerHTML='<option value="">全市</option>'+ds.map(d=>`<option>${d}</option>`).join('');$('vDistSel').innerHTML=ds.map(d=>`<option>${d}</option>`).join('')}
-function load(data,demo){DATA=data;isDemo=demo;cur=null;selPkg=null;openPkg=null;$('dataFlag').textContent=demo?'臺北市開放資料・人口 115 年 9 月':'目前是你匯入的資料';baseline();fillSelects();setView('city');renderCity();renderSide('src')}
+function load(data,demo){DATA=data;isDemo=demo;cur=null;selPkg=null;openPkg=null;$('dataFlag').textContent=demo?'臺北市開放資料・人口 115 年 9 月':'目前是你匯入的資料';baseline();fillSelects();setView('city');renderCity()}
 $('resetBtn').onclick=()=>{load(DEMO,true);$('importMsg').textContent='已回到臺北市資料'};
 $('importBtn').onclick=()=>{
   const raw=$('csvIn').value.trim(),msg=$('importMsg');if(!raw){msg.textContent='請先貼上 CSV 內容';return}
@@ -824,88 +667,7 @@ $('importBtn').onclick=()=>{
 };
 
 try{const f=localStorage.getItem('zl.fs');if(f)setFS(f)}catch(e){}
-/* ================= 右側面板：資料／方法／版本 ================= */
-const DS={
- taipei_pop:['臺北市各里人口數按年齡分（民政局）','https://data.taipei/dataset/detail?id=a6394e3f-3514-4542-87bd-de4310a40db3'],
- taipei_acc:['臺北市死傷交通事故明細（警察局）＋警政署 A1、A2','https://data.taipei/dataset/detail?id=2f238b4f-1b27-4085-93e9-d684ef0e2735'],
- village:['臺北市村里界圖','https://data.gov.tw/dataset/121424'],
- tree:['行道樹、公園樹木、人行道（走這條！樹蔭分析）','https://data.taipei/dataset/detail?id=7a49d00c-a5ff-4a6b-be9e-aaa6dc1ff7e8'],
- mrt:['臺北市公車站牌位置圖＋臺北捷運出入口座標','https://data.taipei/dataset/detail?id=48aa5bca-2a4f-4fb7-a658-43cba51d5d56'],
- care:['臺北市銀髮族服務_社區照顧關懷據點（社會局）','https://data.taipei/dataset/detail?id=d082dc87-d3fd-479d-89c6-745ff1be955a'],
- wifi:['臺北市公眾區免費無線上網熱點資料（資訊局）','https://data.taipei/dataset/detail?id=6aa6532d-652f-4c1b-814a-4646b75407af'],
-};
-// 沒有資料的指標：去哪裡找、屬於哪一類
-const NEED={
- alone:['apply','民政局戶籍資料（戶內僅一老或雙老）。data.taipei 的「臺北市獨居老人人數」是社會局列冊人數、只到區，定義不同，未採用'],
- nat:['open','民政局各里出生、死亡統計（data.taipei 待確認是否到里）'],
- soc:['open','民政局各里遷入、遷出統計（data.taipei 待確認是否到里）'],
- lowinc:['apply','社會局低收、中低收名冊，只取里級加總；開放資料多為區級'],
- crime:['apply','警察局；開放資料多為區級統計'],
- fraud:['apply','警察局；開放資料多為區級統計'],
- oldH:['open','財政部房屋稅籍住宅類屋齡（待確認是否到村里）'],
- hazard:['open','臺北市土壤液化潛勢圖（工務局，data.taipei）：10/23 下載時伺服器錯誤，待重試'],
- heat:['dist','中央氣象署測站，套用到所屬各里'],quake:['dist','中央氣象署，區級'],rain:['dist','中央氣象署，區級'],aqi:['dist','環境部空品測站，區級'],
- disab:['apply','社會局身障人數，只取里級加總；開放資料多為區級'],
- disable:['apply','長照管理中心失能長者，只取里級加總'],
- res:['open','健保署特約醫事機構（有地址，需轉座標後計算 500 m 內）'],
- doc:['dist','衛福部醫事人員統計，區級'],ltcbed:['dist','衛福部長照床位，區級'],ltcuse:['dist','衛福部長照使用率，區級'],
- chk:['apply','衛生局，只取里級加總'],scr:['apply','衛生局，只取里級加總'],flu:['apply','衛生局、疾管署，只取里級加總'],
- vol:['apply','社會局志願服務，只取里級加總'],learn:['apply','社會局、教育局（身分證歸戶後加總）'],
- cover:['open','社會局社區照顧關懷據點、巷弄長照站名冊（有地址）'],
- pass:['apply','健保署，只取里級加總'],
- edu:['dist','民政局各區人口按年齡及教育程度分（區級開放資料）'],
- digpt:['open','Taipei Free 熱點、數位學習據點位置'],
-};
-const HAVE={p65:'taipei_pop',p80:'taipei_pop',oldDep:'taipei_pop',dep:'taipei_pop',chg:'taipei_pop',dens:'village',acc:'taipei_acc',shade:'tree',bus:'mrt',cover:'care',digpt:'wifi'};
-const STT={ok:'已匯入',est:'推估',open:'有開放資料，待下載',apply:'機關資料，需申請',dist:'區級資料'};
-const stp=k=>`<span class="st ${k}">${STT[k]}</span>`;
-function renderSide(tab){
-  document.querySelectorAll('[data-stab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.stab===tab));
-  const B=$('sideBody');
-  if(tab==='src'){
-    const cnt=id=>DATA.filter(r=>isN(r.V0&&r.V0[id])).length;
-    const rows=DOMS.map(([d,t])=>`<tr class="sub"><td colspan="3"><b>${t}</b></td></tr>`+IND.filter(i=>i.d===d).map(i=>{
-      const n=cnt(i.id);let st,src;
-      if(n){st=i.id==='shade'?'est':'ok';const k=HAVE[i.id];src=k&&DS[k]?(DS[k][1]?`<a href="${DS[k][1]}" target="_blank" rel="noopener">${DS[k][0]}</a>`:DS[k][0]):i.src;src+=`<br><span class="muted sm">${n} / ${DATA.length} 里有資料${i.id==='cover'?'；依地址里名，510 處中 496 處對到里':''}${i.id==='digpt'?'；數位學習據點待補':''}${i.id==='shade'?'；樹冠寬推估 8 公尺':''}</span>`}
-      else{const z=NEED[i.id]||['apply',i.src];st=z[0];src=z[1]}
-      return `<tr><td>${i.n}</td><td>${stp(st)}</td><td>${src}</td></tr>`}).join('')).join('');
-    const tally={};IND.forEach(i=>{const k=cnt(i.id)?(i.id==='shade'?'est':'ok'):(NEED[i.id]||['apply'])[0];tally[k]=(tally[k]||0)+1});
-    B.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
-     <p class="sm">${isDemo?'目前用臺北市開放資料：人口 115 年 9 月、長者行人事故 2023–2025 年、人行道樹蔭、公車站與捷運出入口、社區照顧關懷據點、Taipei Free 熱點。':'目前是你匯入的資料。'}沒有資料的指標顯示「待提供」，不列入計分。</p>
-     <div class="legend">${Object.keys(STT).filter(k=>tally[k]).map(k=>`<span>${stp(k)} ${tally[k]} 項</span>`).join('')}</div>
-     <div class="tbl"><table class="t"><thead><tr><th>指標</th><th>狀態</th><th>資料來源</th></tr></thead><tbody>${rows}</tbody></table></div>
-     <p class="note">補資料的順序建議：先下載「有開放資料」的項目（醫療院所、災害潛勢），再向機關申請里級加總（獨居、低收、健檢、志工）。機關資料只放加總人數，不放名冊；少於 3 人的數字頁面會遮蔽。</p></div>`;
-  } else if(tab==='how'){
-    B.innerHTML=`<div style="display:flex;flex-direction:column;gap:12px">
-     <h3>怎麼判斷一個里需要幫忙</h3>
-     <ol class="steps sm">
-      <li>每項指標依全市 456 里的分布，換算成風險位階（0 最好、100 最差）</li>
-      <li>點數法：落在全市最弱 10% 記 1 點；一個面向 2 點以上（指標超過 4 項的面向要 3 點）就是高風險</li>
-      <li>四分位法（進階）：面向平均位階在最差 1/4 為高風險（GAWI 準則）</li>
-      <li>政策卡：相關指標有一項在全市最弱 8%，或兩項在最弱 20%，這個里就是政策對象</li></ol>
-     <h3>資料怎麼來</h3>
-     <ul class="sm" style="margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px">
-      <li>人口：臺北市民政局各里年齡人口，115 年 9 月；趨勢用 110–115 年</li>
-      <li>長者行人事故：2023–2025 三年，只算行人、一件算一次，落在哪個里就算哪個里</li>
-      <li>危險路口：三年內 76 公尺內長者被撞 ≥5 次＝危險，3–4 次＝觀察（與「走這條！」同一套規則）</li>
-      <li>人行道樹蔭：行道樹＋公園樹木，棵數 × 樹冠寬 8 公尺 ÷ 人行道長度（推估）</li></ul>
-     <p class="cite">指標架構依國發會「114 年度建置以資料科學為基礎之社會政策治理機制」委託計畫之五大領域風險評估指標公式草案。計算程式：GitHub 專案 analysis/build_taipei.py。</p></div>`;
-  } else {
-    const V=[['1.8','10/24','全市頁新增「100 日建置計畫」：三階段工作、完成標準，以及 13 類利害關係人與需要他們做的事'],
-     ['1.7','10/24','里長文書新增「100 日行動計畫」頁籤：依該里觸發的政策，自動產生第 1–30、31–60、61–100 日工作、檢核點與 100 日目標'],
-     ['1.6','10/24','可獨立部署；帳號密碼改為選用'],
-     ['1.4','10/23','補上 data.taipei 開放資料：社區照顧關懷據點（496 處對到里）、Taipei Free 熱點、公車站位；參與、數位面向開始有資料'],
-     ['1.3','10/23','新增右側「資料／方法／版本」面板：每個指標標示已匯入、推估、有開放資料待下載、需向機關申請'],
-     ['1.2','10/23','人口改用 115 年 9 月（趨勢 110–115 年）；長者行人事故改為 2023–2025 三年；危險路口分級'],
-     ['1.1','10/23','改用臺北市 456 里開放資料；新增人行道缺樹蔭指標與「陰涼安全的步行路（走這條！）」政策'],
-     ['1.0','10/23','獨立成專案；頁尾改為「解方之一：走這條！」'],
-     ['0.x','10/22','臺中市示範資料版：對齊國發會五大領域指標、政策卡、里長文書']];
-    B.innerHTML=`<p class="sm">目前版本：<b>${V[0][0]}</b>（2026/${V[0][1]}）</p><div class="tbl"><table class="t"><thead><tr><th>版本</th><th>日期</th><th>內容</th></tr></thead><tbody>${V.map(v=>`<tr><td><b>${v[0]}</b></td><td>${v[1]}</td><td>${v[2]}</td></tr>`).join('')}</tbody></table></div>`;
-  }
-}
-document.addEventListener('click',e=>{const t=e.target.closest('[data-stab]');if(t)renderSide(t.dataset.stab)});
-$('sideBtn').onclick=()=>{try{$('side').scrollIntoView({behavior:'smooth'})}catch(err){}};
-baseline();fillSelects();renderCity();renderSide('src');
+baseline();fillSelects();renderCity();
 try{const z=$('toZou'),h=location.hostname;if(!/workers\.dev$/.test(h)){z.removeAttribute('href')}else if(h.startsWith('zheli-needs-you.')){z.href='https://'+h.replace(/^zheli-needs-you\./,'silver-safe-walk.')+'/'}}catch(e){}
 const h=location.hash.slice(1);if(h==='village')openVillage(null);else if(h==='ind'||h==='data')setView(h);else setView('city');
 })();
