@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>這里需要你</title>
+<meta name="description" content="以里為單位，看見需要的長輩：臺北市 456 里的高齡社區韌性儀表板">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 版型來自「這里需要你」交接包（LAYOUT.md）；資料改用本專案臺北市 456 里開放資料 */
+:root{
+  --ink:#211D1D; --ink-2:#4A3F3A; --sub:#6E5950; --muted:#7A655C;
+  --brand:#AD4D2A; --brand-deep:#963F24; --brand-text:#B5532F; --orange:#DB6A41; --yellow:#FCEA8B; --gold:#C9A92E;
+  --bg:#FFF8F4; --card:#FFFFFF; --line:#EFE3DA; --track:#F3ECE6; --chip:#E8E1D8; --border:#D9D4CC;
+  --tint-red:#FBEDE7; --tint-yellow:#FEF6D8; --on-dark:#FFE9DC;
+  --lv-red:#963F24; --lv-yellow:#DB6A41; --lv-green:#FCEA8B; --lv-none:#E2DCD5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Noto Sans TC','Noto Sans CJK TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif}
+a{color:var(--brand)}a:hover{color:#7F3518}
+button,select,input,textarea{font-family:inherit}
+:focus-visible{outline:3px solid #211D1D;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:22px}
+.tag-sim{font-size:11px;font-weight:700;color:var(--sub);border:1.5px dashed #B9A79C;padding:1px 6px;border-radius:6px;white-space:nowrap}
+.tag-est{font-size:11px;font-weight:700;color:#8C3E1F;background:#FDEEE6;padding:2px 6px;border-radius:6px;white-space:nowrap}
+.tag-real{font-size:11px;font-weight:700;color:var(--ink-2);background:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap}
+.pill{min-height:44px;padding:10px 18px;border-radius:999px;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:#fff;color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+.mark{background:linear-gradient(transparent 55%,var(--yellow) 55%);color:var(--ink);padding:0 3px}
+.nowrap{white-space:nowrap}
+.zl-map path.hit{cursor:pointer;transition:opacity .15s}
+.zl-map path.hit:hover{opacity:.78}
+.crumb{background:none;border:0;padding:0;font:inherit;color:var(--brand);text-decoration:underline;cursor:pointer;min-height:32px}
+.stage{position:relative;min-height:660px;border-radius:20px;background:var(--bg);overflow:hidden}
+.layer{position:absolute;inset:70px 330px 90px 20px;display:flex;align-items:center;justify-content:center;transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.layer.is-off{opacity:0;pointer-events:none}
+.layer.city.is-off{transform:scale(1.25)} .layer.vil.is-off{transform:scale(.8)}
+.float{position:absolute;z-index:2;background:#fff;border-radius:16px;box-shadow:0 12px 32px rgba(33,29,29,.14);animation:zlFloat 6s ease-in-out infinite}
+.slot{position:absolute;z-index:3;right:20px;bottom:20px;transition:opacity .45s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
+.slot.is-off{opacity:0;transform:translateY(40px);pointer-events:none}
+@keyframes zlFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.sec{position:relative;overflow:hidden;border-radius:24px;padding:28px;display:flex;flex-direction:column;gap:20px;scroll-margin-top:90px}
+.sec>*{position:relative}
+.anim .sec{animation:zlUp .7s cubic-bezier(.2,.8,.2,1) both}
+.ghost{position:absolute!important;right:20px;top:-18px;font-size:140px;font-weight:900;line-height:1;color:rgba(173,77,42,.08);pointer-events:none;letter-spacing:-.04em}
+@keyframes zlUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+.lift{transition:transform .2s ease,box-shadow .2s ease}
+.lift:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(33,29,29,.13)}
+.jump a{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:8px 16px;border-radius:999px;text-decoration:none;color:var(--ink);font-weight:700;font-size:15px}
+.jump a:hover{background:var(--tint-red);color:var(--ink)}
+.ins{border-radius:14px;transition:background .2s}
+.ins:hover{background:rgba(255,255,255,.55)}
+.dot{transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.ins:hover .dot{transform:rotate(-10deg) scale(1.1)!important}
+.grow{animation:grow .7s cubic-bezier(.2,.8,.2,1) both;transform-origin:left}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.bub{animation:zlUp .5s cubic-bezier(.2,.8,.2,1) both}
+.sec-head{display:flex;align-items:center;gap:16px}
+.sec-icon{width:58px;height:58px;border-radius:18px;color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.eyebrow{font-size:13px;font-weight:900;letter-spacing:.14em}
+.h2{margin:0;font-size:28px;font-weight:900}
+.cols{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.col-all{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:14px}
+.form{flex:1 1 360px;min-width:0;background:#fff;border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 30px rgba(150,120,20,.14)}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+legend{font-size:15px;font-weight:900;padding:0;margin-bottom:10px}
+.hint{font-size:12px;font-weight:400;color:var(--sub)}
+.sel{min-height:44px;padding:0 12px;border-radius:10px;border:1.5px solid var(--border);font-size:16px;background:#fff;color:var(--ink);max-width:100%}
+.src{background:#fff;border-radius:16px;padding:6px 20px}
+.src summary{cursor:pointer;font-weight:900;font-size:16px;min-height:44px;display:flex;align-items:center}
+.src table{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0 16px}
+.src th,.src td{text-align:left;padding:8px 6px;border-top:1px solid var(--track);vertical-align:top}
+.src th{color:var(--sub);font-weight:700}
+.tblw{overflow-x:auto}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.float,.anim .sec,.bub,.grow{animation:none}.layer,.slot{transition:none}.lift:hover{transform:none}}
+@media (max-width: 860px){
+  .stage{min-height:0;display:flex;flex-direction:column;gap:12px;padding:12px}
+  .layer,.float,.slot{position:static!important;width:auto!important;animation:none;transform:none!important;opacity:1!important}
+  .layer.is-off,.slot.is-off{display:none}
+  .ghost{font-size:90px}
+  .sec{padding:20px}
+  .h2{font-size:24px}
+}
+</style>
+</head>
+<body class="anim">
+<div class="wrap" id="app"></div>
+<script>
+/* ===== 資料：analysis/build_page.py 內嵌，請勿手改 =====
+   LI：臺北市 456 里（analysis/output/taipei_li_full.json）
+   MAP：12 區與 456 里界的 SVG 路徑（analysis/build_map.js，內政部國土測繪中心村里界） */
+const LI=/*__LI__*/null;
+const MAP=/*__MAP__*/null;
+
+/* ===== 小工具 ===== */
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const isN=v=>v!==null&&v!==undefined&&v!==''&&!isNaN(v);
+const fmt=n=>isN(n)?Math.round(n).toLocaleString('zh-TW'):'—';
+const f1=n=>isN(n)?(+n).toFixed(1):'—';
+const mask=n=>isN(n)?(n>0&&n<3?'—':fmt(n)):'—';
+const median=a=>{const s=a.filter(isN).sort((x,y)=>x-y),m=s.length>>1;return s.length?(s.length%2?s[m]:(s[m-1]+s[m])/2):null};
+const sum=(a,f)=>a.reduce((s,x)=>s+(isN(f(x))?f(x):0),0);
+const key=r=>r.d+'|'+r.v;
+function hash(s){let h=2166136261;for(const c of s){h^=c.codePointAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function linProj(a,n){const k=a.length,mx=(k-1)/2,my=a.reduce((p,q)=>p+q,0)/k;let nu=0,de=0;a.forEach((v,i)=>{nu+=(i-mx)*(v-my);de+=(i-mx)**2});const b=nu/de;return Array.from({length:n},(_,i)=>my+b*(k-1+i+1-mx))}
+
+const LV={'需要關注':'var(--lv-red)','留意':'var(--lv-yellow)','穩定':'var(--lv-green)','資料不足':'var(--lv-none)'};
+const LVINK={'需要關注':'#fff','留意':'#211D1D','穩定':'#211D1D','資料不足':'#4A3F3A'};
+const badge=(lv,size)=>`<span style="font-size:${size||12}px;font-weight:700;padding:3px 10px;border-radius:999px;background:${LV[lv]};color:${LVINK[lv]};white-space:nowrap${lv==='穩定'?';box-shadow:inset 0 0 0 1px var(--gold)':''}">${esc(lv)}</span>`;
+const dot=lv=>`<span aria-hidden="true" style="width:14px;height:14px;border-radius:50%;flex:0 0 auto;background:${LV[lv]}${lv==='穩定'?';box-shadow:inset 0 0 0 1.5px var(--gold)':''}"></span>`;
+const lvByShare=x=>x>=.25?'需要關注':x>=.12?'留意':'穩定';
+const TAG={real:'',est:'<span class="tag-est">推估</span>',sim:'<span class="tag-sim">模擬</span>'};
+
+const ICON={
+  users:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.2c3 .2 5.5 2.3 5.5 5.8"/></svg>',
+  shield:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+  bulb:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></svg>',
+  spark:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg>',
+  heart:'<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  chat:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>',
+  down:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>'
+};
+const heart=(size,fill)=>`<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill||'none'}" stroke="${fill?'none':'currentColor'}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg>`;
+
+/* ===== 指標（只放有里級資料的項目；其他列在「待機關提供」） =====
+   hw：數值越高越不利；st：real 開放資料、est 推估 */
+// 失智：衛福部 109–112 年全國社區失智症流行病學調查年齡別盛行率（65–69 2.40%、70–74 5.16%、75–79 9.10%、80–84 16.00%、85+ 23.23%）
+// 里級人口只到 65–74、75–79、80–89、90+，65–74 與 80–89 取兩個年齡組的平均盛行率
+const DEMR={a6574:(2.40+5.16)/2/100,a7579:.0910,a8089:(16.00+23.23)/2/100,a90:.2323};
+function demN(r){const a90=r.am[9]+r.am[10]+r.af[9]+r.af[10],a8089=r.e80-a90,a7579=r.e65-r.e6574-r.e80;
+  return r.e6574*DEMR.a6574+a7579*DEMR.a7579+a8089*DEMR.a8089+a90*DEMR.a90}
+const IND=[
+ {id:'dem',k:'health',g:'健康狀況',n:'失智長輩',u:'%',hw:1,st:'est',c:r=>demN(r)/r.e65*100,t:(v,r)=>`約 ${fmt(demN(r))} 人・${f1(v)}%`,m:v=>f1(v)+'%',note:'依年齡分層推估',
+  src:'衛福部 109–112 年全國社區失智症流行病學調查（年齡別盛行率）× 本里 65 歲以上各年齡人口',f:'65–74 歲 × 3.78%＋75–79 歲 × 9.10%＋80–89 歲 × 19.62%＋90 歲以上 × 23.23%，÷ 65 歲以上'},
+ {id:'liq',k:'safe',g:'環境安全',n:'土壤液化中高潛勢面積比',u:'%',hw:1,st:'real',c:r=>r.liq,src:'臺北市土壤液化潛勢圖（soil.taipei，2019）',f:'里內中、高潛勢面積 ÷ 里面積'},
+ {id:'fl',k:'safe',g:'環境安全',n:'極端降雨積水面積比',u:'%',hw:1,st:'real',c:r=>r.fl130,src:'臺北市降雨積水模擬圖（112 年更新版，data.taipei）',f:'時雨量 130 mm 可能積水範圍 ÷ 里面積'},
+ {id:'shade',k:'safe',g:'環境安全',n:'人行道缺樹蔭比例',u:'%',hw:1,st:'est',c:r=>r.shade,src:'行道樹、公園樹木、人行道（走這條，一路順！分析，樹冠寬推估 8 m）',f:'人行道未被樹冠覆蓋的比例；人行道少於 500 m 的里不計'},
+ {id:'shel',k:'safe',g:'避難與設施',n:'每千位長輩避難收容容量',u:' 人',hw:0,st:'real',c:r=>r.e65?r.shCap/r.e65*1000:null,t:v=>fmt(v)+' 人',src:'114 年臺北市可供避難收容處所一覽表（data.taipei）',f:'服務本里的收容人數（多里共用時平均分攤）÷ 65 歲以上 × 1000'},
+ {id:'wc',k:'safe',g:'避難與設施',n:'500m 內公廁',u:' 處',hw:0,st:'real',c:r=>r.wcN,src:'臺北市公廁點位資訊（data.taipei）',f:'里代表點 500 公尺內公廁數'},
+ {id:'wcA',k:'safe',g:'避難與設施',n:'500m 內無障礙廁座',u:' 座',hw:0,st:'real',c:r=>r.wcA,src:'臺北市公廁點位資訊（data.taipei）',f:'里代表點 500 公尺內無障礙廁座數'},
+ {id:'acc',k:'safe',g:'交通安全',n:'長者行人事故（每千位長輩，三年）',u:'',hw:1,st:'real',c:r=>r.e65?r.acc/r.e65*1000:null,t:(v,r)=>`${f1(v)}・${r.acc} 件`,m:v=>f1(v),src:'臺北市警察局死傷交通事故明細、警政署 A1／A2（2023–2025）',f:'三年 65 歲以上行人被撞事故 ÷ 65 歲以上 × 1000'},
+ {id:'bus',k:'safe',g:'交通安全',n:'500m 內公車站與捷運出入口',u:' 處',hw:0,st:'real',c:r=>r.bus,src:'臺北市公車站牌位置、臺北捷運出入口座標（data.taipei）',f:'里代表點 500 公尺內公車站位＋捷運出入口數'},
+ {id:'busD',k:'safe',g:'交通安全',n:'公車站密度（每平方公里）',u:' 站',hw:0,st:'real',c:r=>r.area?r.busIn/r.area:null,src:'臺北市公車站牌位置（data.taipei）× 村里界',f:'里內公車站位數 ÷ 里面積'},
+ {id:'care',k:'part',g:'社會參與',n:'每千位長輩社區關懷據點',u:' 處',hw:0,st:'real',c:r=>r.e65?r.careN/r.e65*1000:null,t:(v,r)=>`${r.careN} 處・每千人 ${f1(v)}`,m:v=>'每千人 '+f1(v),src:'社會局社區照顧關懷據點（data.taipei，依地址里名）',f:'里內關懷據點數 ÷ 65 歲以上 × 1000'},
+ {id:'wifi',k:'part',g:'數位',n:'Taipei Free 熱點',u:' 處',hw:0,st:'real',c:r=>r.wifi,src:'臺北市公眾區免費無線上網熱點（data.taipei）',f:'里界內 Taipei Free 熱點數'}
+];
+const PENDING={
+ health:['失能長輩（長照管理中心）','身障長輩（社會局）','500m 內醫療院所（健保署）','長照使用率（衛生局）','健檢、癌篩、流感接種率（衛生局）'],
+ safe:['低收及中低收入戶占率（社會局）','詐騙、犯罪（警察局）','老舊公寓占率（稅務局）'],
+ part:['長輩志工率（社會局）','終身學習參與（社會局、教育局）','健康存摺使用率（健保署）']
+};
+const FACET={health:'健康',safe:'安全',part:'參與'};
+const FKEYS=['health','safe','part'];
+const INDM=Object.fromEntries(IND.map(i=>[i.id,i]));
+
+/* ===== 計算 ===== */
+const ALL=LI;
+ALL.forEach(r=>{r.key=key(r);r.V={};IND.forEach(i=>{const v=i.c(r);r.V[i.id]=isN(v)?v:null});
+  r.f80=r.af[8]+r.af[9]+r.af[10];r.proj=r.t65&&r.t65.length>=2?linProj(r.t65,5)[4]:null});
+const MED={};IND.forEach(i=>MED[i.id]=median(ALL.map(r=>r.V[i.id])));
+// 風險位階（與 v2.5.1 相同算法）：用來排全市優先序
+const RISK={};IND.forEach(i=>{RISK[i.id]=ALL.map(r=>r.V[i.id]).filter(isN).map(v=>i.hw?v:-v).sort((a,b)=>a-b)});
+function riskPos(i,v){const arr=RISK[i.id];if(!isN(v)||!arr.length)return null;const rv=i.hw?v:-v;let lo=0,eq=0;for(const a of arr){if(a<rv)lo++;else if(a===rv)eq++}return(lo+eq/2)/arr.length}
+function items(r,k){return IND.filter(i=>i.k===k&&isN(r.V[i.id])).map(i=>{const v=r.V[i.id],m=MED[i.id];
+  return{i,v,m,worse:i.hw?v>m:v<m,pos:riskPos(i,v),text:i.t?i.t(v,r):fmt1(v,i)+i.u,medText:i.m?i.m(m):fmt1(m,i)+i.u}})}
+function fmt1(v,i){return i.u==='%'?f1(v):(Math.abs(v)<10&&v%1?f1(v):fmt(v))}
+function facetStatus(r,k){const a=items(r,k),w=a.filter(x=>x.worse).length;
+  if(a.length<2)return{lv:'資料不足',worse:w,total:a.length};const s=w/a.length;return{lv:s>=.75?'需要關注':s>=.5?'留意':'穩定',worse:w,total:a.length}}
+// 全市優先序：v2.5.1 的算法（風險位階 ≥ 90% 的項數；同分看高風險面向數，再看 80 歲以上人數），推估指標不計
+const OLD=IND.filter(i=>i.st!=='est'||i.id==='shade');
+ALL.forEach(r=>{r.F={};FKEYS.forEach(k=>r.F[k]=facetStatus(r,k));
+  r.pts=OLD.filter(i=>{const p=riskPos(i,r.V[i.id]);return p!==null&&p>=.9}).length;
+  r.reds=['safe','part'].filter(k=>OLD.filter(i=>i.k===k&&(riskPos(i,r.V[i.id])||0)>=.9).length>=3).length});
+[...ALL].sort((a,b)=>b.pts-a.pts||b.reds-a.reds||b.e80-a.e80).forEach((r,i)=>{r.rank=i+1;r.lv=r.rank<=114?'需要關注':r.rank<=228?'留意':'穩定'});
+const BYKEY=Object.fromEntries(ALL.map(r=>[r.key,r]));
+const DISTS=MAP.districts.map(d=>d.key);
+const DIST={};DISTS.forEach(d=>{const a=ALL.filter(r=>r.d===d),red=a.filter(r=>r.lv==='需要關注').length;
+  DIST[d]={n:a.length,red,lv:lvByShare(red/a.length),f:Object.fromEntries(FKEYS.map(k=>{const c=a.filter(r=>r.F[k].lv==='需要關注').length,nd=a.every(r=>r.F[k].lv==='資料不足');return[k,{n:c,lv:nd?'資料不足':lvByShare(c/a.length)}]}))}});
+const CITY=(()=>{const pop=sum(ALL,r=>r.pop),e65=sum(ALL,r=>r.e65),e80=sum(ALL,r=>r.e80),w=sum(ALL,r=>r.a1564),f80=sum(ALL,r=>r.f80);
+  const t=ALL[0].t65.map((_,j)=>sum(ALL,r=>r.t65[j])),proj=linProj(t,5)[4];const red=ALL.filter(r=>r.lv==='需要關注');
+  return{n:ALL.length,pop,e65,e80,p65:e65/pop*100,p80:e80/pop*100,p80of65:e80/e65*100,dep:e65/w*100,f80p:f80/pop*100,inc5:proj-e65,redE65:sum(red,r=>r.e65),redN:red.length,
+    f:Object.fromEntries(FKEYS.map(k=>{const c=ALL.filter(r=>r.F[k].lv==='需要關注').length,nd=ALL.every(r=>r.F[k].lv==='資料不足');return[k,{n:c,lv:nd?'資料不足':lvByShare(c/ALL.length)}]}))}})();
+
+/* ===== 洞察：比全市弱、位階最高的 3 項，轉成一句白話 ===== */
+const INS={
+ acc:{topic:'走路比較危險',f:'安全',say:(r,v,m)=>m>0?['長輩走在路上出事的機率，是全市的 ',(v/m).toFixed(1)+' 倍','。']:['三年內有 ',r.acc+' 件','長輩行人事故。'],det:(r,v,m)=>`長者行人事故三年 ${r.acc} 件，每千位長輩 ${f1(v)}（全市中位數 ${f1(m)}）`+(r.hot&&r.hot.length?`；${esc(r.hot[0][0])}是${esc(r.hot[0][1].replace(/（.*/,''))}`:'')+'。'},
+ bus:{topic:'搭車不容易',f:'安全',say:(r,v)=>['走 5 分鐘，',v?'只有 '+v+' 個':'找不到','公車站或捷運出入口。'],det:(r,v,m)=>`500m 內站點 ${v} 處（全市中位數 ${fmt(m)} 處）；里內有 ${fmt(r.e80)} 位 80 歲以上長輩。`},
+ busD:{topic:'搭車不容易',f:'安全',say:(r,v,m)=>['公車站比全市少，每平方公里 ',f1(v)+' 站','。'],det:(r,v,m)=>`里內公車站 ${r.busIn} 站（全市中位數每平方公里 ${f1(m)} 站）。`},
+ wc:{topic:'找廁所不容易',f:'安全',say:(r,v)=>['出門走 5 分鐘，',v?'只有 '+v+' 間':'找不到','公共廁所。'],det:(r,v,m)=>`500m 內公廁 ${v} 處（全市中位數 ${fmt(m)} 處）。`},
+ wcA:{topic:'找廁所不容易',f:'安全',say:(r,v)=>['坐輪椅的長輩，附近',v?'只有 '+v+' 座':'找不到','無障礙廁所。'],det:(r,v,m)=>`500m 內無障礙廁座 ${v} 座（全市中位數 ${fmt(m)} 座）。`},
+ shade:{topic:'走路很曬',f:'安全',say:(r,v)=>['人行道有 ',Math.round(v)+'%','沒有樹蔭，夏天出門很曬。'],det:(r,v,m)=>`人行道缺樹蔭 ${f1(v)}%（全市中位數 ${f1(m)}%）。`},
+ fl:{topic:'大雨會積水',f:'安全',say:(r,v)=>['極端大雨時，',f1(v)+'%','的土地可能積水。'],det:(r,v,m)=>`時雨量 130 mm 情境積水面積比 ${f1(v)}%（全市中位數 ${f1(m)}%）。`},
+ liq:{topic:'地震時地層較弱',f:'安全',say:(r,v)=>['有 ',f1(v)+'%','的土地在土壤液化中高潛勢區。'],det:(r,v,m)=>`中高潛勢面積比 ${f1(v)}%（全市中位數 ${f1(m)}%）。`},
+ shel:{topic:'避難空間不夠',f:'安全',say:(r,v)=>['萬一要避難，每 1000 位長輩只有 ',fmt(v)+' 個','位子。'],det:(r,v,m)=>`服務本里的收容容量 ${fmt(r.shCap)} 人（每千位長輩全市中位數 ${fmt(m)}）。`},
+ care:{topic:'關懷據點少',f:'參與',say:(r,v)=>r.careN?['每 1000 位長輩，只有 ',f1(v)+' 個','社區關懷據點。']:['里內',  '沒有','社區關懷據點。'],det:(r,v,m)=>`里內關懷據點 ${r.careN} 處，${fmt(r.e65)} 位長輩（每千位全市中位數 ${f1(m)}）。`},
+ wifi:{topic:'上網不方便',f:'參與',say:(r,v)=>['想用免費 Wi-Fi，里內',v?'只有 '+v+' 個':'找不到','熱點。'],det:(r,v,m)=>`Taipei Free 熱點 ${v} 處（全市中位數 ${fmt(m)} 處）。`},
+ dem:{topic:'失智長輩多',f:'健康',say:(r,v)=>['大約每 ',Math.round(100/v)+' 位長輩','，就有 1 位可能失智。'],det:(r,v,m)=>`推估約 ${fmt(demN(r))} 位（${f1(v)}%，全市中位數 ${f1(m)}%）；80 歲以上長輩多，比例就高。`}
+};
+function insights(r){const seen=new Set(),out=[];
+  FKEYS.flatMap(k=>items(r,k)).filter(x=>x.worse&&INS[x.i.id]).sort((a,b)=>(b.pos||0)-(a.pos||0)).forEach(x=>{const n=INS[x.i.id];if(out.length<3&&!seen.has(n.topic)){seen.add(n.topic);out.push({id:x.i.id,topic:n.topic,facet:n.f,st:x.i.st,say:n.say(r,x.v,x.m),det:n.det(r,x.v,x.m)})}});
+  return out}
+
+/* ===== 模擬：示範點子、幫手（Demo 不儲存） ===== */
+const IDEA_POOL={
+ '走路比較危險':[['里民','可以請區公所在那個路口加長行人綠燈，長輩常常走到一半就變燈。','區'],['民間單位','我們協會可以帶長輩走一次常走的路，把危險的地方標出來。','里']],
+ '搭車不容易':[['里民','希望有社區接駁車，一週兩天載長輩去市場和診所。','市'],['民眾','附近店家可以當「歇腳站」，讓等車的長輩坐一下。','里']],
+ '找廁所不容易':[['民間單位','我們店的廁所可以借長輩用，貼個貼紙讓大家知道。','里'],['里民','公園那間公廁可以加一間無障礙廁所。','區']],
+ '走路很曬':[['里民','往市場那條路可以多種幾棵樹，或加遮陽棚。','區'],['民眾','夏天中午可以把活動改到早上，長輩比較不會曬到。','里']],
+ '大雨會積水':[['里民','大雨前可以請志工先打電話給獨居長輩。','里'],['民間單位','我們可以幫一樓的長輩準備防水擋板。','區']],
+ '地震時地層較弱':[['里民','希望辦一次老房子耐震檢查說明會。','市'],['民眾','可以幫長輩把家裡的櫃子固定好。','里']],
+ '避難空間不夠':[['里民','活動中心可以多準備一些避難用的椅子和毯子。','區'],['民間單位','我們教會可以當臨時避難空間。','里']],
+ '關懷據點少':[['里民','里辦公處每週可以開一個下午給長輩喝茶聊天。','里'],['民間單位','我們咖啡店平日早上可以借場地辦共餐。','里']],
+ '上網不方便':[['民眾','我可以每月來教長輩用手機視訊和叫車。','里'],['里民','活動中心可以加裝免費 Wi-Fi。','區']],
+ '失智長輩多':[['民間單位','我們可以辦失智友善店家訓練，讓店員知道怎麼幫忙。','區'],['里民','鄰居之間可以互相留意，有長輩迷路時先打給里長。','里']]
+};
+const HELP_TYPES=['陪長輩聊天、關懷','提供空間或場地','送餐、物資','專業服務','災後整理','環境整理','成為友善商家','活動幫手','其他'];
+function simIdeas(r,ins){const h=hash(r.key),out=[];
+  ins.forEach((n,j)=>{const pool=IDEA_POOL[n.topic]||[];const take=((h>>j)&1)+1;pool.slice(0,take).forEach(p=>out.push({who:[p[0]],topic:[n.topic],scope:[p[2]],text:p[1]}))});return out}
+function simHelpers(r){const h=hash(r.key+'h');const c=HELP_TYPES.map((_,i)=>((h>>(i*3))&7)+(i<2?4:0));const max=Math.max(...c);return{types:c.map(n=>n<3?null:n),total:max+((h>>28)&7)+3}}
+
+/* ===== 狀態 ===== */
+const S={view:'city',zoom:false,town:null,village:null,facet:null,allInd:false,pyr:false,
+  who:['里民'],topic:[],scope:['里'],draft:'',sent:false,ideas:[],ideaFilter:'全部',helpOffer:[],helpContact:'',helpSent:false,helpers:0,helpAdd:{}};
+const WHO=[['里民','里','#DB6A41'],['民眾','眾','#AD4D2A'],['民間單位','民','#4A3F3A'],['其他','他','#8A7469']];
+const toggle=(arr,v,keepOne)=>{const a=arr.slice(),i=a.indexOf(v);if(i>=0){if(!keepOne||a.length>1)a.splice(i,1)}else a.push(v);return a};
+const cur=()=>BYKEY[S.village];
+const topOf=d=>ALL.filter(r=>!d||r.d===d).sort((a,b)=>a.rank-b.rank)[0];
+function scopes(r){return[['里',r.v,'這個里','var(--yellow)','#211D1D'],['區',r.d,'區公所','var(--orange)','#fff'],['市','臺北市','市府','var(--brand-deep)','#fff']]}
+function resetForms(){const r=cur();S.ideas=[];S.sent=false;S.helpers=0;S.helpAdd={};S.helpSent=false;S.helpOffer=[];S.ideaFilter='全部';S.allInd=false;
+  const ins=insights(r);S.topic=ins.length?[ins[0].topic]:['其他'];S.scope=['里'];
+  const o={'需要關注':0,'留意':1,'穩定':2,'資料不足':3};S.facet=FKEYS.slice().sort((a,b)=>o[r.F[a].lv]-o[r.F[b].lv]||r.F[b].worse/(r.F[b].total||1)-r.F[a].worse/(r.F[a].total||1))[0]}
+
+/* ===== 共用版頭 ===== */
+function header(){
+  const city=S.view==='city',r=cur();
+  const navBtn=(on,act,label)=>`<button type="button" data-act="${act}" aria-pressed="${on}" style="min-height:44px;padding:11px 22px;border-radius:999px;font-size:16px;font-weight:700;cursor:pointer;border:1.5px solid ${on?'#fff':'#EFC5AD'};background:${on?'#fff':'transparent'};color:${on?'var(--brand)':'#fff'}">${label}</button>`;
+  const crumbs=city?(S.zoom?`<button type="button" class="crumb" data-act="zoomOut">全市</button><span aria-hidden="true">›</span><span style="color:var(--ink);font-weight:700">${esc(S.town)}</span>`:'<span style="color:var(--ink);font-weight:700">全市</span>')
+    :`<button type="button" class="crumb" data-act="goCity">全市</button><span aria-hidden="true">›</span><button type="button" class="crumb" data-act="goDistrict">${esc(r.d)}</button><span aria-hidden="true">›</span><span style="color:var(--ink);font-weight:700">${esc(r.v)}</span>`;
+  return `<header style="background:var(--brand);color:#fff;border-radius:16px;padding:20px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px">
+   <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:900;letter-spacing:.04em">這里需要你</div><div style="font-size:14px;color:var(--on-dark)">以里為單位，看見需要的長輩・臺北市 456 里</div></div>
+   <nav aria-label="主選單" style="display:flex;gap:8px;flex-wrap:wrap">${navBtn(city,'goCity','全市總覽')}${navBtn(!city,'goMine','我的里')}</nav>
+   <div style="font-size:13px;color:var(--on-dark);background:var(--brand-deep);padding:6px 12px;border-radius:8px">臺北市開放資料・人口 115 年 9 月</div></header>
+   <nav aria-label="位置" style="font-size:15px;color:var(--sub);display:flex;gap:8px;align-items:center;flex-wrap:wrap">${crumbs}</nav>
+   <div role="note" style="background:#fff;border:1.5px dashed #B9A79C;border-radius:12px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:14px;color:var(--ink-2)"><strong>資料說明</strong><span>沒有標示＝開放資料計算</span><span style="display:flex;align-items:center;gap:6px"><span class="tag-est">推估</span>用真實資料加上官方比率或模型算出</span><span style="display:flex;align-items:center;gap:6px"><span class="tag-sim">模擬</span>示意功能，正式版接上後替換</span></div>`;
+}
+
+/* ===== 全市總覽 ===== */
+function cityView(){
+  const c=CITY;
+  const card=(label,big,sub,tag,danger)=>`<div style="background:${danger?'var(--tint-red)':'#fff'};${danger?'border:1.5px solid #E9C2B2;':''}border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:6px"><div style="font-size:14px;color:${danger?'var(--brand-deep)':'var(--sub)'};font-weight:${danger?700:400}">${label}</div><div style="font-size:34px;font-weight:900;color:${danger?'var(--brand-deep)':'var(--ink)'}">${big}</div><div style="font-size:14px;color:var(--sub);display:flex;align-items:center;gap:6px;flex-wrap:wrap">${sub}${tag||''}</div></div>`;
+  const dash=`<section aria-labelledby="dash" style="display:flex;flex-direction:column;gap:14px"><h2 id="dash" style="margin:0;font-size:22px">全市人口儀表板</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+   ${card('65 歲以上長輩',fmt(c.e65),'占全市人口 '+f1(c.p65)+'%')}
+   ${card('80 歲以上長輩',fmt(c.e80),'占 65 歲以上 '+f1(c.p80of65)+'%')}
+   ${card('5 年後多出的長輩','+'+fmt(c.inc5),'依 110–115 年趨勢推估',TAG.est)}
+   ${card('住在需要關注的里',fmt(c.redE65),'位長輩・分布在 '+c.redN+' 個里',TAG.est,true)}</div></section>`;
+  const fc=k=>{const x=c.f[k];if(x.lv==='資料不足')return `<div style="background:#fff;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:20px;font-weight:900">${FACET[k]}</div>${badge('資料不足',13)}</div><div style="font-size:14px;color:var(--sub);line-height:1.6">目前只有推估的失智長輩一項，其他待衛生局、長照管理中心提供。</div></div>`;
+    return `<div style="background:#fff;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;justify-content:space-between;gap:8px"><div style="font-size:20px;font-weight:900">${FACET[k]}</div><div style="font-size:13px;font-weight:700;color:${LVINK[x.lv]};background:${LV[x.lv]};padding:4px 10px;border-radius:999px">${x.n} 里需要關注</div></div><div style="height:10px;background:var(--track);border-radius:5px;overflow:hidden"><div class="grow" style="height:10px;width:${(x.n/c.n*100).toFixed(1)}%;background:${LV[x.lv]};border-radius:5px"></div></div><div style="font-size:13px;color:var(--sub)">${IND.filter(i=>i.k===k).length+PENDING[k].length} 項指標中，${IND.filter(i=>i.k===k).length} 項已有里級資料</div></div>`};
+  const facets=`<section aria-labelledby="facets" style="display:flex;flex-direction:column;gap:14px"><h2 id="facets" style="margin:0;font-size:22px">社區高齡韌性：三大面向</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px">${FKEYS.map(fc).join('')}</div></section>`;
+  const dPaths=MAP.districts.map(p=>{const lv=DIST[p.key].lv;return `<path class="hit" data-act="pickTown" data-town="${esc(p.key)}" d="${p.d}" fill="${LV[lv]}" stroke="#fff" stroke-width="2"><title>${esc(p.key)}：${DIST[p.key].red} 里需要關注</title></path>`}).join('')
+    +MAP.districts.map(p=>{const lv=DIST[p.key].lv;return `<text x="${p.cx}" y="${p.cy+5}" text-anchor="middle" font-size="15" font-weight="700" fill="${lv==='需要關注'?'#fff':'#211D1D'}" pointer-events="none">${esc(p.key.replace('區',''))}</text>`}).join('');
+  const legend=['需要關注','留意','穩定'].map(l=>`<span style="display:flex;align-items:center;gap:6px"><span aria-hidden="true" style="width:14px;height:14px;border-radius:4px;background:${LV[l]}${l==='穩定'?';box-shadow:inset 0 0 0 1.5px var(--gold)':''}"></span>${l}</span>`).join('');
+  const lights=`<section aria-labelledby="lights" style="background:#fff;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px">
+   <div style="display:flex;flex-direction:column;gap:4px"><h2 id="lights" style="margin:0;font-size:22px">各區紅綠燈</h2><div style="font-size:15px;color:var(--sub)">點一區放大看每個里，再點一個里看預覽</div></div>
+   <div class="stage" id="stage">
+   <div class="layer city" id="layerCity"><svg class="zl-map" viewBox="0 0 460 520" role="img" aria-label="臺北市 12 區地圖，點一區放大" style="width:100%;max-width:470px;height:auto;max-height:600px">${dPaths}</svg></div>
+   <div class="layer vil" id="layerVil"></div>
+   <div class="float" style="top:20px;left:20px;padding:10px 14px;display:flex;align-items:center;gap:10px" id="scopeChip"></div>
+   <div class="float" style="top:20px;right:20px;width:290px;padding:16px;display:flex;flex-direction:column;gap:8px;animation-delay:-2s" id="scopeFacets"></div>
+   <div class="slot" id="previewSlot"><div class="float" style="position:relative;width:290px;padding:16px;background:var(--brand);color:#fff;display:flex;flex-direction:column;gap:8px;animation-delay:-4s" id="preview"></div></div>
+   <div class="float" style="bottom:20px;left:20px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:12px;font-size:13px;align-items:center;animation-delay:-3s">${legend}<span class="tag-est">燈號依全市優先序</span></div></div>
+   <div style="font-size:13px;color:var(--muted);line-height:1.7">里的燈號：全市優先序前 1/4（114 里）＝需要關注，再 1/4＝留意，其餘＝穩定。區的燈號：需要關注的里占 25% 以上＝需要關注，12% 以上＝留意。</div></section>`;
+  return dash+facets+lights;
+}
+function facetRow(n,lv,sub,bg){return `<div style="background:${bg||'var(--bg)'};color:var(--ink);border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px"><span style="display:flex;align-items:center;gap:10px;flex:0 0 auto">${dot(lv)}<span style="font-size:16px;font-weight:900;white-space:nowrap">${n}</span></span><span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end"><span style="font-size:12px;color:var(--sub)">${sub}</span>${badge(lv)}</span></div>`}
+function villageFacets(r){return FKEYS.map(k=>{const s=r.F[k];return facetRow(FACET[k],s.lv,s.lv==='資料不足'?'待機關提供':s.worse+'/'+s.total+' 項比全市弱','#fff')}).join('')}
+function vilMap(d){
+  const vs=MAP.villages[d],n=vs.length,fs=n>45?9:n>35?10:11,minA=n>45?380:260;
+  return `<svg class="zl-map" viewBox="0 0 460 560" role="img" aria-label="${esc(d)} ${n} 里紅綠燈地圖，點一個里看預覽" style="width:100%;max-width:470px;height:auto;max-height:600px">`
+   +vs.map(p=>{const r=BYKEY[d+'|'+p.key];return `<path class="hit" data-act="pickVillage" data-village="${esc(r.key)}" d="${p.d}" fill="${LV[r.lv]}" stroke="#fff" stroke-width="1.2"><title>${esc(p.key)}：${r.lv}（全市第 ${r.rank} 優先）</title></path>`}).join('')
+   +'<path id="selPath" d="" fill="none" stroke="#211D1D" stroke-width="3.5" pointer-events="none"/><circle id="selCircle" cx="-200" cy="0" r="60" fill="none" stroke="#211D1D" stroke-width="2" stroke-dasharray="6 5" pointer-events="none"/>'
+   +vs.filter(p=>p.a>=minA).map(p=>{const lv=BYKEY[d+'|'+p.key].lv;return `<text x="${p.cx}" y="${p.cy+4}" text-anchor="middle" font-size="${fs}" font-weight="700" fill="${lv==='需要關注'?'#fff':'#211D1D'}" pointer-events="none">${esc(p.key.replace(/里$/,''))}</text>`}).join('')+'</svg>';
+}
+function updateStage(){
+  const z=S.zoom;
+  document.getElementById('layerCity').classList.toggle('is-off',z);
+  const lv=document.getElementById('layerVil');lv.classList.toggle('is-off',!z);
+  if(z&&lv.dataset.town!==S.town){lv.innerHTML=vilMap(S.town);lv.dataset.town=S.town}
+  document.getElementById('previewSlot').classList.toggle('is-off',!z);
+  const d=DIST[S.town];
+  document.getElementById('scopeChip').innerHTML=(z?'<button type="button" data-act="zoomOut" style="min-height:40px;padding:6px 12px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:14px;font-weight:700;cursor:pointer">← 全市</button>':'')
+    +`<span style="font-size:17px;font-weight:900">${z?esc(S.town)+'・'+d.n+' 里':'臺北市 12 區・點一區放大'}</span>`;
+  const F=z?d.f:CITY.f;
+  document.getElementById('scopeFacets').innerHTML=`<div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px"><span style="font-size:18px;font-weight:900">${z?esc(S.town):'全市 456 里'}</span><span style="font-size:12px;color:var(--sub)">社區高齡韌性</span></div>`
+    +FKEYS.map(k=>facetRow(FACET[k],F[k].lv,F[k].lv==='資料不足'?'待機關提供':F[k].n+' 里需要關注')).join('')
+    +(z?`<div style="font-size:12px;color:var(--sub)">${d.red} 里整體需要關注（${Math.round(d.red/d.n*100)}%）</div>`:'');
+  if(z)updatePreview();
+}
+function updatePreview(){
+  const r=cur();if(!r||r.d!==S.town)return;
+  const p=MAP.villages[r.d].find(x=>x.key===r.v),sp=document.getElementById('selPath'),c=document.getElementById('selCircle');
+  if(p&&sp){sp.setAttribute('d',p.d);c.setAttribute('cx',p.cx);c.setAttribute('cy',p.cy);c.setAttribute('r',Math.max(30,Math.min(95,Math.sqrt(p.a)*1.3)))}
+  document.getElementById('preview').innerHTML=`<div style="font-size:12px;color:var(--on-dark)">選取中的里・全市第 ${r.rank} 優先</div><div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:24px;font-weight:900">${esc(r.v)}</span>${badge(r.lv,13)}</div>`
+    +villageFacets(r)+'<button type="button" data-act="goVillage" style="min-height:46px;border-radius:12px;border:0;background:var(--yellow);color:#2B1E00;font-size:15px;font-weight:700;cursor:pointer">看完整健檢 →</button>';
+}
+
+/* ===== 我的里 ===== */
+function secHead(id,eyebrow,title,sub,icon,bg,ebColor,shadow,iconColor){
+  return `<div class="sec-head"><span class="sec-icon" aria-hidden="true" style="background:${bg};color:${iconColor||'#fff'};box-shadow:0 8px 18px ${shadow}">${icon}</span><div style="display:flex;flex-direction:column;gap:2px"><span class="eyebrow" style="color:${ebColor}">${eyebrow}</span><h2 id="${id}" class="h2">${title}</h2>${sub?`<span style="font-size:15px;color:var(--sub)">${sub}</span>`:''}</div></div>`;
+}
+function villageView(){
+  const r=cur();
+  const dOpts=DISTS.map(d=>`<option${d===r.d?' selected':''}>${esc(d)}</option>`).join('');
+  const vOpts=ALL.filter(x=>x.d===r.d).sort((a,b)=>a.rank-b.rank).map(x=>`<option value="${esc(x.key)}"${x.key===r.key?' selected':''}>${esc(x.v)}（第 ${x.rank} 優先）</option>`).join('');
+  const sel=`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end"><label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub)">區<select class="sel" data-act="selTown">${dOpts}</select></label><label style="display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub)">里<select class="sel" data-act="selVillage">${vOpts}</select></label></div>`;
+  const btns=`<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px"><a href="#helper" style="display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:999px;background:var(--yellow);color:var(--ink);text-decoration:none;font-size:16px;font-weight:900;box-shadow:0 8px 18px rgba(0,0,0,.18)">${heart(20)}這里需要你</a><a href="#sol" style="display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:999px;border:1.5px solid #EFC5AD;color:#fff;text-decoration:none;font-size:16px;font-weight:700">${ICON.chat}留下點子</a><button type="button" data-act="report" style="display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:10px 20px;border-radius:999px;border:1.5px solid #EFC5AD;background:transparent;color:#fff;font-size:16px;font-weight:700;cursor:pointer">${ICON.down}下載健檢報告</button></div>`;
+  const hero=`<section style="background:var(--brand);color:#fff;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:10px"><div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><span style="font-size:14px;color:var(--on-dark)">臺北市 ${esc(r.d)}・全市第 ${r.rank} 優先（共 456 里）</span>${badge(r.lv,13)}</div><h1 style="margin:0;font-size:40px;font-weight:900">${esc(r.v)}</h1><p style="margin:0;font-size:20px;line-height:1.6;color:var(--bg)">${heroSummary(r)}</p>${btns}</section>`;
+  const nav='<nav class="jump" aria-label="本頁段落" style="position:sticky;top:10px;z-index:5;align-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:4px;background:#fff;border-radius:999px;padding:6px;box-shadow:0 10px 28px rgba(33,29,29,.12)">'
+   +[['#pop','人口樣貌','var(--orange)'],['#res','韌性指標','var(--brand)'],['#ins','洞察','var(--brand-deep)'],['#sol','邀請點子','var(--gold)']].map(x=>`<a href="${x[0]}"><span aria-hidden="true" style="width:10px;height:10px;border-radius:50%;background:${x[2]}"></span>${x[1]}</a>`).join('')
+   +`<a href="#helper">${heart(14,'#DB6A41')}這里需要你</a></nav>`;
+  return sel+hero+'<div style="display:flex;flex-direction:column;gap:26px">'+nav+popSection(r)+'<section class="sec" aria-labelledby="res" style="background:#fff;animation-delay:.15s" id="resSec"></section>'+insightSection(r)+'<section class="sec" aria-labelledby="sol" style="background:var(--tint-yellow);animation-delay:.35s" id="solSec"></section><section class="sec" aria-labelledby="helper" style="background:var(--tint-red);animation-delay:.45s" id="helpSec"></section></div>';
+}
+function heroSummary(r){
+  const need=[],watch=[];FKEYS.forEach(k=>{if(r.F[k].lv==='需要關注')need.push(FACET[k]);else if(r.F[k].lv==='留意')watch.push(FACET[k])});
+  const ins=insights(r).map(n=>n.topic);
+  const head=(need.length?need.join('與')+'需要多一點關注':'')+(watch.length?(need.length?'、':'')+watch.join('與')+'值得留意':'');
+  if(!head&&!ins.length)return '目前有資料的項目大多和全市差不多或更好。長輩一樣需要鄰居多留意。';
+  return (head||'整體大致穩定')+(ins.length?'：'+ins.join('、')+'。':'。')+(r.lv==='需要關注'?'這里需要你。':'')
+}
+const cmpTag=(a,b)=>a>b?'<span style="font-size:12px;font-weight:700;color:#fff;background:var(--brand);padding:3px 8px;border-radius:999px">▲ 比全市高</span>':'<span style="font-size:12px;font-weight:700;color:var(--ink);background:var(--chip);padding:3px 8px;border-radius:999px">比全市低</span>';
+const BANDS=['0–9','10–19','20–29','30–39','40–49','50–59','60–69','70–79','80–89','90–99','100+'];
+function popSection(r){
+  const c=CITY,p65=r.e65/r.pop*100,p80=r.e80/r.pop*100,dep=r.e65/r.a1564*100,f80p=r.f80/r.pop*100;
+  const card=(label,big,unit,mid,cmp,sub)=>`<div class="lift" style="background:var(--bg);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:6px"><div style="font-size:14px;color:var(--sub)">${label}</div><div style="font-size:30px;font-weight:900">${big}${unit?` <span style="font-size:16px;font-weight:700">${unit}</span>`:''}</div><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><span style="font-size:14px">${mid}</span>${cmp||''}</div><div style="font-size:12px;color:var(--muted)">${sub}</div></div>`;
+  const maxN=Math.max(...r.am,...r.af);
+  const pyr=BANDS.map((b,i)=>i).reverse().map(i=>{const col=i>=7?'var(--brand)':i===6?'#EFC5AD':'var(--chip)',bar=n=>`<div style="height:14px;border-radius:3px;background:${col};width:${n>=3?Math.max(1,Math.round(n/maxN*100)):0}%;max-width:220px"></div>`,m=r.am[i],f=r.af[i];
+    return `<div style="display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:8px;align-items:center;font-size:13px"><div style="display:flex;justify-content:flex-end;align-items:center;gap:6px"><span style="color:var(--sub)">${mask(m)}</span>${bar(m)}</div><div style="text-align:center">${BANDS[i]}</div><div style="display:flex;align-items:center;gap:6px">${bar(f)}<span style="color:var(--sub)">${mask(f)}</span></div></div>`}).join('');
+  const hi65=p65>c.p65,hiF=f80p>c.f80p;
+  const say=`${esc(r.v)}的長輩比例比全市${hi65?'高':'低'}`+(hiF?'，80 歲以上的高齡女性也比全市多。':r.proj>r.e65?`，未來 5 年長輩還會再多約 ${fmt(r.proj-r.e65)} 位。`:'。');
+  return `<section class="sec" aria-labelledby="pop" style="background:#fff;animation-delay:.05s"><span class="ghost" aria-hidden="true">01</span>
+   <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px">${secHead('pop','STEP 01','人口樣貌','',ICON.users,'var(--orange)','var(--brand-text)','rgba(219,106,65,.35)')}<span style="font-size:13px;color:var(--muted)">115 年 9 月・背景資訊，不列入計分</span></div>
+   <p style="margin:0;font-size:20px;font-weight:700;line-height:1.6">${say}</p>
+   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+   ${card('65 歲以上',fmt(r.e65),'人','占 '+f1(p65)+'%',cmpTag(p65,c.p65),'全市 '+f1(c.p65)+'%')}
+   ${card('80 歲以上',fmt(r.e80),'人','占 '+f1(p80)+'%',cmpTag(p80,c.p80),'全市 '+f1(c.p80)+'%')}
+   ${card('扶老比',f1(dep)+'%','','每 100 位青壯年對應的長輩',cmpTag(dep,c.dep),'全市 '+f1(c.dep)+'%')}
+   ${card('5 年後',isN(r.proj)?(r.proj>=r.e65?'+':'')+fmt(r.proj-r.e65):'—','位長輩',isN(r.proj)?'預估 120 年約 '+fmt(r.proj)+' 人':'',TAG.est,'依 110–115 年趨勢推估')}</div>
+   <div style="background:#FDEEE6;border-radius:12px;padding:14px 18px;font-size:16px;line-height:1.6"><strong>發現：</strong>80 歲以上女性有 ${fmt(r.f80)} 人，占總人口 ${f1(f80p)}%，${hiF?'高於':'低於'}全市（${f1(c.f80p)}%）。</div>
+   <button type="button" data-act="togglePyr" aria-expanded="${S.pyr}" class="pill" style="align-self:flex-start;border-radius:10px;font-weight:400">${S.pyr?'收起年齡與性別':'看年齡與性別分布'}</button>
+   ${S.pyr?`<div style="display:flex;flex-direction:column;gap:6px;max-width:640px"><div style="display:grid;grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr);gap:8px;font-size:13px;color:var(--sub);font-weight:700"><span style="text-align:right">男</span><span style="text-align:center">年齡</span><span>女</span></div>${pyr}<div style="font-size:12px;color:var(--muted)">深色＝70 歲以上，淺色＝60–69 歲；少於 3 人以「—」表示</div></div>`:''}
+   <div style="font-size:13px;color:var(--muted);border-top:1px solid var(--track);padding-top:12px">總人口 ${fmt(r.pop)} 人・獨居、居住情況、遷入遷出待民政局提供</div></section>`;
+}
+function renderRes(animate){
+  const r=cur();
+  const cards=FKEYS.map(k=>{const s=r.F[k],on=S.facet===k,circ=188.5,col=s.lv==='穩定'?'#C9A92E':s.lv==='資料不足'?'#B9A79C':LV[s.lv],frac=s.total?s.worse/s.total:0;
+    return `<button type="button" data-act="facet" data-k="${k}" aria-pressed="${on}" style="display:flex;align-items:center;gap:16px;text-align:left;padding:16px 18px;border-radius:16px;color:var(--ink);cursor:pointer;min-height:44px;transition:transform .15s,box-shadow .15s;border:2px solid ${on?'#211D1D':'var(--line)'};background:${on?'#fff':'var(--bg)'};box-shadow:${on?'0 6px 18px rgba(33,29,29,.12)':'none'};transform:${on?'translateY(-2px)':'none'}">
+     <svg width="76" height="76" viewBox="0 0 76 76" aria-hidden="true" style="flex:0 0 auto"><circle cx="38" cy="38" r="30" fill="none" stroke="var(--track)" stroke-width="9"/><circle cx="38" cy="38" r="30" fill="none" stroke="${col}" stroke-width="9" stroke-linecap="round" stroke-dasharray="${(frac*circ).toFixed(1)} ${circ}" transform="rotate(-90 38 38)"/><text x="38" y="44" text-anchor="middle" font-size="18" font-weight="900" fill="#211D1D">${s.worse}/${s.total}</text></svg>
+     <span style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><span style="font-size:22px;font-weight:900">${FACET[k]}</span>${badge(s.lv)}<span style="font-size:13px;color:var(--sub)">${s.lv==='資料不足'?'只有 '+s.total+' 項，待機關提供':s.worse+' 項比全市弱'}</span></span></button>`}).join('');
+  const all=items(r,S.facet),worse=all.filter(x=>x.worse),shown=(S.allInd||!worse.length)?all:worse;
+  const tiles=shown.map(x=>{const scale=Math.max(x.v,x.m)*1.25||1;
+    return `<div style="border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;background:${x.worse?'var(--tint-red)':'var(--bg)'}"><div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span style="font-size:12px;font-weight:700;color:#8C3E1F">${x.i.g}</span>${TAG[x.i.st]}</div>
+     <div style="font-size:15px;font-weight:700;line-height:1.4">${x.i.n}</div>
+     <div data-ind="${x.i.id}" style="font-size:26px;font-weight:900;line-height:1.1;color:${x.worse?'var(--brand-deep)':'var(--ink)'}">${x.text}</div>
+     <div style="position:relative;height:8px;background:#fff;border-radius:4px"><div class="${animate?'grow':''}" style="position:absolute;left:0;top:0;height:8px;border-radius:4px;width:${Math.min(100,Math.max(2,x.v/scale*100)).toFixed(1)}%;background:${x.worse?'var(--brand)':'#C9B8AC'}"></div><div aria-hidden="true" style="position:absolute;top:-3px;width:2px;height:14px;background:#211D1D;left:${Math.min(99,x.m/scale*100).toFixed(1)}%"></div></div>
+     <div style="font-size:13px;font-weight:700;color:${x.worse?'var(--brand-deep)':'var(--sub)'}">${x.worse?'▲ 比全市弱・全市 ':'全市 '}${x.medText}${x.i.note?`<span style="font-weight:400">・${x.i.note}</span>`:''}</div></div>`}).join('');
+  const pend=`<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;color:var(--sub)"><strong style="color:var(--ink-2)">待機關提供：</strong>${PENDING[S.facet].map(p=>`<span class="tag-sim">${p}</span>`).join('')}</div>`;
+  document.getElementById('resSec').innerHTML='<span class="ghost" aria-hidden="true">02</span>'+secHead('res','STEP 02','社區高齡韌性指標','點一個面向，看哪些地方比全市弱',ICON.shield,'var(--brand)','var(--brand)','rgba(173,77,42,.35)')
+   +`<div role="group" aria-label="三大面向" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px">${cards}</div>`
+   +`<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--track);padding-top:16px"><div style="font-size:18px;font-weight:900">${FACET[S.facet]}${(S.allInd||!worse.length)?'：全部 '+all.length+' 項指標':'：比全市弱的 '+worse.length+' 項'}</div>${worse.length&&worse.length<all.length?`<button type="button" data-act="allInd" aria-expanded="${S.allInd}" class="pill" style="border-radius:10px;font-weight:400;font-size:14px">${S.allInd?'只看比全市弱的':'看全部 '+all.length+' 項'}</button>`:''}</div>`
+   +`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px">${tiles}</div>${pend}<div style="font-size:13px;color:var(--muted)">長條＝本里，黑線＝全市中位數。「比全市弱」＝比全市 456 里的中位數差。</div>`;
+}
+function allIdeas(){return S.ideas.concat(simIdeas(cur(),insights(cur())))}
+function insightSection(r){
+  const all=allIdeas(),ins=insights(r);
+  const d=(bg,fg,rot)=>`width:62px;height:62px;border-radius:50%;background:${bg};color:${fg};font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 auto;transform:rotate(${rot}deg);box-shadow:0 8px 16px rgba(150,63,36,.2)`;
+  const DS=[['var(--brand-deep)','#fff',-6],['var(--brand)','#fff',5],['var(--orange)','#211D1D',-4]];
+  const rows=ins.length?ins.map((n,i)=>{const cnt=all.filter(x=>x.topic.includes(n.topic)).length;
+    return `<li class="ins" style="display:flex;gap:20px;align-items:flex-start;padding:22px 6px;border-bottom:2px dashed rgba(150,63,36,.22)"><span class="dot" aria-hidden="true" style="${d(...DS[i])}">${n.facet}</span><div style="display:flex;flex-direction:column;gap:8px;min-width:0"><p style="margin:0;font-size:26px;font-weight:900;line-height:1.45">${n.say[0]}<mark class="mark" style="color:var(--brand-deep)">${n.say[1]}</mark>${n.say[2]}</p><div style="display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:14px;color:var(--sub);line-height:1.6"><span>${n.det}</span>${n.st==='est'?TAG.est:'<span class="tag-real">開放資料</span>'}</div><a href="#ideas" data-act="seeIdeas" data-topic="${esc(n.topic)}" style="align-self:flex-start;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:6px 14px;border-radius:999px;background:var(--ink);color:var(--yellow);text-decoration:none;font-size:14px;font-weight:700">看大家對這個問題的點子（<span data-ideacount="${esc(n.topic)}">${cnt}</span>）→</a></div></li>`}).join('')
+    :'<li style="padding:22px 6px;font-size:20px;font-weight:700">目前有資料的項目，沒有比全市弱的。長輩一樣需要鄰居多留意。</li>';
+  return `<section class="sec" aria-labelledby="ins" style="background:var(--tint-red);animation-delay:.25s"><span class="ghost" aria-hidden="true">03</span>${secHead('ins','STEP 03','洞察','這個里的長輩可能遇到什麼',ICON.bulb,'var(--brand-deep)','var(--brand-deep)','rgba(150,63,36,.35)')}<ol style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column">${rows}</ol><div style="font-size:13px;color:var(--muted)">從比全市弱的項目中，挑差距最大的 3 項。只點出問題，不提供解方。</div></section>`;
+}
+const chipBtn=(act,val,on,label,style)=>`<button type="button" data-act="${act}" data-v="${esc(val)}" aria-pressed="${on}" style="${style}">${label}</button>`;
+function topics(r){return insights(r).map(n=>n.topic).concat(['其他'])}
+function renderSol(){
+  const r=cur(),SC=scopes(r),TOPIC=topics(r),all=allIdeas(),fl=S.ideaFilter,shown=fl==='全部'?all:all.filter(x=>x.topic.includes(fl));
+  const tabs=['全部'].concat(TOPIC).map(t=>{const on=fl===t,c=t==='全部'?all.length:all.filter(x=>x.topic.includes(t)).length;
+    return chipBtn('ideaFilter',t,on,`${esc(t)}<span style="min-width:24px;height:24px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;background:${on?'var(--yellow)':'var(--track)'};color:#211D1D">${c}</span>`,`min-height:40px;display:inline-flex;align-items:center;gap:8px;padding:6px 8px 6px 14px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid ${on?'#211D1D':'var(--chip)'};background:${on?'#211D1D':'#fff'};color:${on?'var(--yellow)':'#211D1D'}`)}).join('');
+  const Wm=Object.fromEntries(WHO.map(w=>[w[0],w]));
+  const av=(c,sz,t)=>`<span aria-hidden="true" style="width:${sz}px;height:${sz}px;border-radius:50%;background:${c};color:#fff;font-size:${Math.round(sz*.42)}px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto">${t}</span>`;
+  const bg=['#fff','#FFF1C7','#FBEDE7'];
+  const bubbles=shown.length?shown.map((d,i)=>{const w=Wm[d.who[0]]||WHO[3];
+    return `<div class="bub" style="display:flex;gap:12px;align-items:flex-start">${av(w[2],40,w[1])}<div style="flex:1 1 auto;min-width:0;background:${bg[i%3]};border-radius:6px 20px 20px 20px;padding:12px 16px;display:flex;flex-direction:column;gap:4px;box-shadow:0 6px 16px rgba(150,120,20,.08)"><div style="display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:13px"><strong>${esc(d.who.join('、'))}</strong><span style="color:var(--sub)">回應「${esc(d.topic.join('、'))}」</span>`
+     +d.scope.map(s=>{const sc=SC.find(x=>x[0]===s);return `<span style="font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;background:${sc[3]};color:${sc[4]}">給${esc(sc[1])}</span>`}).join('')
+     +`</div><div style="font-size:16px;line-height:1.6">${esc(d.text)}</div></div></div>`}).join('')
+    :'<div style="background:#fff;border-radius:6px 20px 20px 20px;padding:16px;font-size:15px;color:var(--sub)">這個問題還沒有人留言，當第一個吧！</div>';
+  const whoBtns=WHO.map(w=>{const on=S.who.includes(w[0]);return chipBtn('who',w[0],on,av(w[2],26,w[1])+w[0],`min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:999px;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid ${on?'#211D1D':'var(--chip)'};background:${on?'var(--tint-yellow)':'#fff'};color:#211D1D`)}).join('');
+  const topicBtns=TOPIC.map(t=>{const on=S.topic.includes(t);return chipBtn('topic',t,on,esc(t),`min-height:44px;padding:8px 14px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid ${on?'var(--brand-deep)':'var(--chip)'};background:${on?'var(--brand-deep)':'#fff'};color:${on?'#fff':'#211D1D'}`)}).join('');
+  const scopeBtns=SC.map(s=>{const on=S.scope.includes(s[0]);return chipBtn('scope',s[0],on,`<span style="font-size:15px;font-weight:900">${esc(s[1])}</span><span style="font-size:12px;font-weight:400;opacity:.85">${s[2]}</span>`,`min-height:44px;display:inline-flex;align-items:baseline;gap:6px;padding:8px 16px;border-radius:14px;cursor:pointer;border:1.5px solid ${on?'#211D1D':'var(--chip)'};background:${on?'#211D1D':'#fff'};color:${on?'var(--yellow)':'#211D1D'}`)}).join('');
+  document.getElementById('solSec').innerHTML='<span class="ghost" aria-hidden="true" style="color:rgba(150,120,20,.1)">04</span>'+secHead('sol','STEP 04','邀請點子','這里需要你的點子',ICON.spark,'#211D1D','#6B5A12','rgba(33,29,29,.3)','var(--yellow)')
+   +'<div style="display:flex;flex-direction:column;gap:8px"><p style="margin:0;font-size:26px;font-weight:900;line-height:1.5">這些問題沒有標準答案，<mark class="mark">最懂這個里的，<span class="nowrap">是住在這裡、</span><span class="nowrap">在這裡服務的人。</span></mark></p><p style="margin:0;font-size:16px;color:var(--sub);line-height:1.7">里民、民眾、民間單位，任何人都可以留下想法。這裡不提供標準答案，讓在地的點子自己長出來。</p></div>'
+   +`<div class="cols"><div class="col-all" id="ideas"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap"><span style="font-size:18px;font-weight:900">大家的點子・<span data-num="ideaTotal">${all.length}</span> 則</span><span class="tag-sim">示範內容為模擬</span></div><div role="group" aria-label="依問題看點子" style="display:flex;flex-wrap:wrap;gap:8px">${tabs}</div>${bubbles}</div>`
+   +`<form class="form" onsubmit="return false"><div style="font-size:18px;font-weight:900">換我說說看</div><fieldset><legend>我是 <span class="hint">（可複選）</span></legend><div style="display:flex;flex-wrap:wrap;gap:8px">${whoBtns}</div></fieldset><fieldset><legend>想回應哪些問題 <span class="hint">（可複選）</span></legend><div style="display:flex;flex-wrap:wrap;gap:8px">${topicBtns}</div></fieldset><fieldset><legend>這個點子想給 <span class="hint">（可複選）</span></legend><div style="display:flex;flex-wrap:wrap;gap:8px">${scopeBtns}</div></fieldset>`
+   +`<label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:900">你的點子<textarea data-input="draft" rows="4" placeholder="例如：我可以每週陪隔壁長輩去市場；我們店可以借座位給長輩休息……" style="font:inherit;font-weight:400;font-size:16px;line-height:1.6;border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;resize:vertical;min-height:110px">${esc(S.draft)}</textarea></label>`
+   +`<button type="button" data-act="submitIdea" style="min-height:50px;border-radius:14px;border:0;background:#211D1D;color:var(--yellow);font-size:17px;font-weight:900;cursor:pointer">送出我的點子</button>${S.sent?'<div role="status" style="font-size:14px;color:#6B5A12;font-weight:700">謝謝你！你的點子已經加到左邊。（Demo 不會儲存）</div>':''}</form></div>`;
+}
+function renderHelp(animate){
+  const r=cur(),H=simHelpers(r);
+  const stats=HELP_TYPES.map((n,i)=>{const base=H.types[i],add=S.helpAdd[n]||0,c=base==null?(add?add:null):base+add;return{n,c:c!=null&&c<3&&base==null?null:c,added:add>0}});
+  const max=Math.max(1,...stats.map(s=>s.c||0));
+  const rows=stats.map(s=>`<div style="display:grid;grid-template-columns:132px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:14px"><span>${s.n}</span><span style="height:12px;background:var(--track);border-radius:6px;overflow:hidden"><span class="${animate?'grow':''}" style="display:block;height:12px;border-radius:6px;background:${s.added?'var(--brand)':'var(--orange)'};width:${s.c?(s.c/max*100).toFixed(1):0}%"></span></span><strong data-helper="${s.n}" style="text-align:right"${s.c==null?' title="少於 3 人不顯示"':''}>${s.c==null?'—':s.c}</strong></div>`).join('');
+  const offers=HELP_TYPES.map(n=>{const on=S.helpOffer.includes(n);return chipBtn('offer',n,on,n,`min-height:44px;padding:8px 16px;border-radius:999px;font-size:15px;font-weight:700;cursor:pointer;border:1.5px solid ${on?'var(--brand)':'var(--chip)'};background:${on?'var(--brand)':'#fff'};color:${on?'#fff':'#211D1D'}`)}).join('');
+  const avs=[['','var(--orange)','#fff'],['','var(--yellow)','#211D1D'],['','var(--brand)','#fff'],['+','#EFC5AD','#211D1D']].map((a,i)=>`<span style="width:40px;height:40px;border-radius:50%;background:${a[1]};border:3px solid #fff;${i?'margin-left:-12px;':''}display:inline-flex;align-items:center;justify-content:center;font-weight:900;color:${a[2]}">${a[0]}</span>`).join('');
+  document.getElementById('helpSec').innerHTML='<span class="ghost" aria-hidden="true" style="color:rgba(219,106,65,.1)">♥</span>'+secHead('helper','STEP 05','這里需要你','成為'+esc(r.v)+'的幫手',ICON.heart,'var(--orange)','var(--brand-text)','rgba(219,106,65,.35)')
+   +'<div style="display:flex;flex-direction:column;gap:8px"><p style="margin:0;font-size:26px;font-weight:900;line-height:1.5">不用是專家。<mark class="mark"><span class="nowrap">陪長輩聊天、</span><span class="nowrap">借一個空間、</span><span class="nowrap">颱風後出動整理，</span><span class="nowrap">都是幫忙。</span></mark></p><p style="margin:0;font-size:16px;color:var(--sub);line-height:1.7">留下你可以做的事，里辦公處或在地團體需要時會聯絡你。</p></div>'
+   +`<div class="cols"><div class="col-all"><div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap"><span style="font-size:18px;font-weight:900">大家可以幫什麼</span><span class="tag-sim">示範內容為模擬</span></div><div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap"><span aria-hidden="true" style="display:flex">${avs}</span><span style="font-size:16px">已經有 <strong data-num="helperCount" style="font-size:28px;color:var(--brand)">${H.total+S.helpers}</strong> 位幫手</span></div><div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">${rows}</div><div style="font-size:12px;color:var(--muted)">可複選，加總會超過幫手人數；少於 3 人以「—」表示。</div></div>`
+   +`<form class="form" onsubmit="return false"><div style="font-size:18px;font-weight:900">我也想幫忙</div><fieldset><legend>我可以 <span class="hint">（可複選）</span></legend><div style="display:flex;flex-wrap:wrap;gap:8px">${offers}</div></fieldset>`
+   +`<label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:900">怎麼聯絡你<input type="text" data-input="helpContact" value="${esc(S.helpContact)}" placeholder="稱呼與電話或 LINE" autocomplete="off" style="font:inherit;font-weight:400;font-size:16px;min-height:48px;border:1.5px solid var(--border);border-radius:12px;padding:0 14px;background:#fff;color:#211D1D"></label>`
+   +`<button type="button" data-act="submitHelper" style="min-height:52px;border-radius:14px;border:0;background:var(--brand);color:#fff;font-size:17px;font-weight:900;cursor:pointer">我願意幫忙</button>${S.helpSent?`<div role="status" style="font-size:15px;color:#6B5A12;font-weight:700">謝謝你成為${esc(r.v)}的幫手！需要時我們會聯絡你。</div>`:''}`
+   +'<div style="font-size:12px;color:var(--muted);line-height:1.6">Demo 不會儲存或傳送任何資料，重新整理就會消失。正式版的聯絡資料只提供給里辦公處與合作團體聯繫用，不會公開。</div></form></div>';
+}
+
+/* ===== 資料來源 ===== */
+function sources(){
+  const rows=IND.map(i=>`<tr><td>${FACET[i.k]}</td><td>${i.n}${i.st==='est'?' '+TAG.est:''}</td><td>${i.f}</td><td>${i.src}</td></tr>`).join('');
+  return `<details class="src"><summary>資料來源與計算方式</summary><div class="tblw"><table><thead><tr><th>面向</th><th>指標</th><th>計算</th><th>來源</th></tr></thead><tbody>
+   <tr><td>人口</td><td>65、80 歲以上、扶老比、年齡性別</td><td>115 年 9 月；5 年後依 110–115 年 65 歲以上人數線性推估</td><td>臺北市民政局各里人口按年齡分</td></tr>${rows}
+   <tr><td>燈號</td><td>全市優先序</td><td>各指標在全市的風險位階 ≥ 90% 的項數排序（同分看高風險面向數、80 歲以上人數）</td><td>本頁計算（與 v2.5.1 相同）</td></tr>
+   <tr><td>燈號</td><td>面向燈號</td><td>比全市中位數弱的項數 ÷ 有資料的項數：≥ 3/4 需要關注、≥ 1/2 留意；少於 2 項＝資料不足</td><td>本頁計算</td></tr>
+   <tr><td>模擬</td><td>大家的點子、幫手人數</td><td>示意功能；送出只留在畫面上，不儲存、不傳送</td><td>—</td></tr></tbody></table></div>
+   <div style="font-size:13px;color:var(--muted);padding-bottom:14px">地圖：內政部國土測繪中心村里界（taiwan-atlas 1:10,000 簡化版）。</div></details>`;
+}
+
+/* ===== 渲染與事件 ===== */
+function render(){
+  document.getElementById('app').innerHTML=header()+(S.view==='city'?cityView():villageView())+sources()
+   +'<footer style="font-size:13px;color:var(--muted);line-height:1.7;text-align:center">這里需要你｜解方之一：<a id="toZou" href="/">走這條，一路順！</a>｜臺北市 456 里開放資料計算；標示「推估」「模擬」者見上方說明</footer>';
+  try{const z=document.getElementById('toZou'),h=location.hostname;if(!/workers\.dev$/.test(h))z.removeAttribute('href');else if(h.startsWith('zheli-needs-you.'))z.href='https://'+h.replace(/^zheli-needs-you\./,'silver-safe-walk.')+'/'}catch(e){}
+  if(S.view==='city')updateStage();else{renderRes(true);renderSol();renderHelp(true)}
+}
+function setVillage(k){S.village=k;resetForms()}
+function goVillageView(){S.view='village';try{history.replaceState(null,'','#village')}catch(e){}render();window.scrollTo(0,0)}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-act]');if(!t||t.tagName==='SELECT')return;const a=t.getAttribute('data-act');
+  switch(a){
+   case 'goCity':S.view='city';S.zoom=false;try{history.replaceState(null,'','#')}catch(e){}render();window.scrollTo(0,0);break;
+   case 'goDistrict':S.view='city';S.town=cur().d;S.zoom=true;render();window.scrollTo(0,0);break;
+   case 'goMine':goVillageView();break;
+   case 'goVillage':goVillageView();break;
+   case 'pickTown':S.town=t.getAttribute('data-town');S.zoom=true;if(!cur()||cur().d!==S.town)setVillage(topOf(S.town).key);updateStage();document.querySelector('nav[aria-label="位置"]').outerHTML=header().match(/<nav aria-label="位置"[\s\S]*?<\/nav>/)[0];break;
+   case 'zoomOut':S.zoom=false;render();break;
+   case 'pickVillage':setVillage(t.getAttribute('data-village'));updatePreview();break;
+   case 'facet':S.facet=t.getAttribute('data-k');S.allInd=false;renderRes(true);break;
+   case 'allInd':S.allInd=!S.allInd;renderRes(true);break;
+   case 'togglePyr':S.pyr=!S.pyr;render();document.getElementById('pop').scrollIntoView();break;
+   case 'ideaFilter':S.ideaFilter=t.getAttribute('data-v');renderSol();break;
+   case 'seeIdeas':S.ideaFilter=t.getAttribute('data-topic');renderSol();break;
+   case 'who':S.who=toggle(S.who,t.getAttribute('data-v'),true);S.sent=false;renderSol();break;
+   case 'topic':S.topic=toggle(S.topic,t.getAttribute('data-v'),true);S.sent=false;renderSol();break;
+   case 'scope':S.scope=toggle(S.scope,t.getAttribute('data-v'),true);S.sent=false;renderSol();break;
+   case 'submitIdea':{const txt=S.draft.trim();if(!txt)return;const TP=topics(cur());S.ideas=[{who:S.who.slice(),topic:TP.filter(x=>S.topic.includes(x)),scope:['里','區','市'].filter(x=>S.scope.includes(x)),text:txt}].concat(S.ideas);S.draft='';S.sent=true;renderSol();
+     document.querySelectorAll('[data-ideacount]').forEach(el=>{const tp=el.getAttribute('data-ideacount');el.textContent=allIdeas().filter(x=>x.topic.includes(tp)).length});break}
+   case 'offer':S.helpOffer=toggle(S.helpOffer,t.getAttribute('data-v'),false);S.helpSent=false;renderHelp(false);break;
+   case 'submitHelper':if(!S.helpOffer.length)return;S.helpOffer.forEach(k=>{S.helpAdd[k]=(S.helpAdd[k]||0)+1});S.helpers++;S.helpOffer=[];S.helpContact='';S.helpSent=true;renderHelp(true);break;
+   case 'report':alert('Demo：正式版會產出「'+cur().v+'」健檢報告 PDF。');break;
+  }
+});
+document.addEventListener('change',e=>{const a=e.target.getAttribute('data-act');
+  if(a==='selVillage'){setVillage(e.target.value);render()}
+  else if(a==='selTown'){setVillage(topOf(e.target.value).key);render()}});
+document.addEventListener('input',e=>{const k=e.target.getAttribute('data-input');if(k)S[k]=e.target.value});
+
+/* 網址參數：?view=village&town=萬華區&village=柳鄉里&facet=safe&zoom=1&all=1&pyr=1&ideas=…&noanim=1；#village 直接開我的里 */
+(function(){const q=new URLSearchParams(location.search);
+  const t=q.get('town'),v=q.get('village');S.town=t&&DIST[t]?t:topOf().d;
+  const k=v&&BYKEY[(t||'')+'|'+v]?(t+'|'+v):v?(ALL.find(r=>r.v===v)||{}).key:null;
+  setVillage(k||topOf(S.town).key);if(!t&&k)S.town=cur().d;
+  if(q.get('view')==='village'||location.hash==='#village')S.view='village';
+  if(q.get('zoom')==='1')S.zoom=true; if(q.get('facet')&&FACET[q.get('facet')])S.facet=q.get('facet');
+  if(q.get('all')==='1')S.allInd=true; if(q.get('pyr')==='1')S.pyr=true; if(q.get('ideas'))S.ideaFilter=q.get('ideas');
+  if(q.get('noanim')==='1')document.body.classList.remove('anim')})();
+render();
+setTimeout(()=>document.body.classList.remove('anim'),1500);
+</script>
+</body>
+</html>
