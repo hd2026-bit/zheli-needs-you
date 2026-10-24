@@ -1,6 +1,5 @@
 // 這里需要你：伺服器端帳號密碼驗證（HTTP Basic Auth）
-// 帳號密碼放在 Cloudflare 的 Secret：DEMO_USER、DEMO_PASS（不寫在程式碼裡）
-// 沒設定 Secret 時一律拒絕（fail closed）
+// 帳號密碼為選用：Cloudflare 的 Secret DEMO_USER、DEMO_PASS 兩個都設定才需登入；沒設定＝公開瀏覽（demo 用）
 
 const enc = new TextEncoder();
 
@@ -33,14 +32,13 @@ const text = (body, status, extra = {}) =>
 
 export default {
   async fetch(request, env) {
-    if (!env.DEMO_USER || !env.DEMO_PASS) {
-      return text("網站尚未設定帳號密碼，暫不開放。", 503);
-    }
+    const needAuth = Boolean(env.DEMO_USER && env.DEMO_PASS);
     const cred = decodeBasic(request.headers.get("Authorization"));
     const ok =
-      cred &&
+      !needAuth ||
+      (cred &&
       (await sameSecret(cred[0], env.DEMO_USER)) &
-      (await sameSecret(cred[1], env.DEMO_PASS));
+      (await sameSecret(cred[1], env.DEMO_PASS)));
     if (!ok) {
       return text("請輸入帳號密碼。", 401, {
         "WWW-Authenticate": 'Basic realm="zheli-needs-you", charset="UTF-8"',

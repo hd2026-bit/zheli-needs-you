@@ -4,7 +4,7 @@
 
 - 指標架構：對齊國發會「超高齡社會五大領域風險評估指標」草案（36 項指標，A／B／C 三級資料）
 - 頁面：`public/index.html`（單檔，可直接開啟）
-- 線上版：走這條！網站網址加 `/zheli/`（同一組帳號密碼）。更新時把本專案的 `public/index.html` 複製到 silver-safe-walk 的 `public/zheli/index.html`
+- 線上版：走這條！網站網址加 `/zheli/`。更新時把本專案的 `public/index.html` 複製到 silver-safe-walk 的 `public/zheli/index.html`
 - 目前為示範資料；「匯入資料」頁可貼上一里一列的 CSV 替換
 
 ## 與其他專案的關係
@@ -33,4 +33,4 @@
 ## 部署（Cloudflare Workers）
 - 獨立網址：`https://zheli-needs-you.<子網域>.workers.dev`，頁尾「走這條！」自動連到同一子網域的 `silver-safe-walk`
 - Cloudflare：Workers & Pages → Create → Import a repository → 選本 repo → Deploy
-- 帳密：Settings → Variables and Secrets 新增 Secret `DEMO_USER`、`DEMO_PASS`（未設定時一律拒絕）
+- 帳密（選用）：沒設定時公開瀏覽；要登入就在 Settings → Variables and Secrets 新增 Secret `DEMO_USER`、`DEMO_PASS`
